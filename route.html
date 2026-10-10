@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Маршрут путешественника · ORBITA</title>
+<meta name="description" content="Семь этапов сопровождения космического путешественника: живой отсчёт до старта, подсветка текущего этапа и чек-листы.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Маршрут</div>
+  <span class="eyebrow">04 · Путь путешественника</span>
+  <h1>Семь этапов сопровождения</h1>
+  <p class="lead">Выберите рейс — и увидите, где сейчас находится программа подготовки: живой отсчёт
+  до старта, текущий этап и прогресс всего маршрута. Каждый этап отражается в чек-листе личного профиля.</p>
+</section>
+
+<!-- ВЫБОР РЕЙСА И ОТСЧЁТ -->
+<section class="section">
+  <div class="panel route-board">
+    <div class="route-top">
+      <div class="field" style="min-width:min(320px,100%);margin:0">
+        <label for="flightSel">Рейс</label>
+        <select id="flightSel"><option>Загрузка каталога…</option></select>
+      </div>
+      <div class="route-chip" id="routeChip">—</div>
+    </div>
+
+    <h3 style="margin:26px 0 12px">Обратный отсчёт до старта</h3>
+    <div id="countdownHost"><p>—</p></div>
+
+    <div class="route-bar" aria-hidden="true"><i id="routeBar"></i></div>
+    <div class="route-now" id="routeNow">—</div>
+  </div>
+</section>
+
+<!-- ТАЙМЛАЙН -->
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Маршрут</span>
+    <h2>Этапы путешествия</h2>
+    <p>Нажмите на этап, чтобы раскрыть детали. Пройденные отмечены зелёным, текущий — подсвечен.</p>
+  </div>
+
+  <ol class="timeline" id="tl">
+    <li data-from="-180" data-to="-121">
+      <b>T-180 дней</b><span>Отбор, анкетирование, первичный медицинский скрининг и допуск к подготовке</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Проверка сердечно-сосудистой системы, лёгких и вестибулярного аппарата.
+      Уже на этом этапе сервис формирует базовый прогноз укачивания по гипотезе H₂.</p>
+    </li>
+    <li data-from="-120" data-to="-31">
+      <b>T-120 дней</b><span>Персональный план подготовки: физика полёта, тренировки, питание</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Курс физики невесомости и перегрузок, индивидуальный план кардионагрузок.
+      План учитывает выбранную программу полёта из профиля.</p>
+    </li>
+    <li data-from="-30" data-to="-8">
+      <b>T-30 дней</b><span>Полигонные тренировки, проверка переносимости перегрузок и вестибулярных нагрузок</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Занятия в центрифуге до заявленного максимума программы (3–6 g),
+      отработка действий в параболе и в условиях частичной невесомости.</p>
+    </li>
+    <li data-from="-7" data-to="0">
+      <b>T-7 дней</b><span>Финальный чек-лист, брифинг, подтверждение состава экипажа и погоды</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Последний медицинский контроль, инструктаж по бортовому ассистенту M3,
+      проверка документов и посадочного талона в личном кабинете.</p>
+    </li>
+    <li data-from="0" data-to="0.1">
+      <b>T-0 · Запуск</b><span>Бортовой ассистент и мониторинг показателей в реальном времени</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Посадка, выход на траекторию, набор перегрузок. Наземная группа видит
+      показатели в реальном времени и может подсказать ассистенту уточняющие инструкции.</p>
+    </li>
+    <li data-from="0.1" data-to="12.1">
+      <b>Микрогравитация</b><span>Программа наблюдений и отдыха, контроль состояния, отчёты наземной группе</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Длительность зависит от программы: 5 минут невесомости на суборбитальном
+      полёте до 12 дней на лунной программе. Расписание сна и приёмов пищи ведёт ассистент.</p>
+    </li>
+    <li data-from="12.2" data-to="22.2">
+      <b>T+10 дней</b><span>Возвращение, реабилитация, отчёт и оценка эффективности сервиса</span>
+      <em class="tl-tag">впереди</em>
+      <p class="tl-more">Восстановление вестибулярного аппарата под наблюдением медиков,
+      отчёт о самочувствии в профиле и обратная связь — она улучшает прогнозные модели сервиса.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">Чек-лист</span>
+    <h2>Что взять и что знать путешественнику</h2>
+  </div>
+
+  <div class="grid-3">
+    <article class="card">
+      <div class="card-icon">🎒</div>
+      <h3>Личное</h3>
+      <ul class="ticks" style="grid-template-columns:1fr;margin-top:10px">
+        <li>Документ, подтверждающий личность</li>
+        <li>Медицинская выписка из профиля</li>
+        <li>Контакт наземного сопровождающего</li>
+      </ul>
+    </article>
+    <article class="card">
+      <div class="card-icon">🫀</div>
+      <h3>Подготовка</h3>
+      <ul class="ticks" style="grid-template-columns:1fr;margin-top:10px">
+        <li>10 занятий кардионагрузкой в неделю</li>
+        <li>Тренировки в центрифуге по плану M1</li>
+        <li>Сон не менее 8 часов за неделю до полёта</li>
+      </ul>
+    </article>
+    <article class="card">
+      <div class="card-icon">📡</div>
+      <h3>На борту</h3>
+      <ul class="ticks" style="grid-template-columns:1fr;margin-top:10px">
+        <li>Голосовые команды ассистенту M3</li>
+        <li>Фиксация симптомов в протокол</li>
+        <li>Расписание сна и приёмов пищи</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="hero-actions" style="margin-top:40px">
+    <a href="calc.html" class="btn">Подобрать свой полёт</a>
+    <a href="econ.html" class="btn btn-ghost">Показатели проекта →</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+
+// --- даты --------------------------------------------------------------------
+const MONTHS = {'января':0,'февраля':1,'марта':2,'апреля':3,'мая':4,'июня':5,'июля':6,
+  'августа':7,'сентября':8,'октября':9,'ноября':10,'декабря':11};
+
+function parseRuDate(str) {
+  const m = String(str || '').match(/(\d{1,2})\s+([а-яё]+)\s+(\d{4})/i);
+  if (!m) return null;
+  const mo = MONTHS[m[2].toLowerCase()];
+  if (mo === undefined) return null;
+  return new Date(+m[3], mo, +m[1], 9, 0, 0);
+}
+
+function flightDays(str) {         // длительность программы в днях
+  const n = parseInt(str, 10) || 0;
+  return String(str || '').toLowerCase().includes('дн') ? n : 0.1;
+}
+
+let products = [];
+let selectedId = null;
+let timer = null;
+
+// --- выбор рейса -------------------------------------------------------------
+function initSelect() {
+  const sel = $('flightSel');
+  const now = Date.now();
+  // по умолчанию — ближайший предстоящий старт
+  const withDates = products.map(p => ({p, d: parseRuDate(p.date)}));
+  const upcoming = withDates.filter(x => x.d && x.d.getTime() > now)
+    .sort((a, b) => a.d - b.d);
+  const fallback = upcoming[0] || withDates.filter(x => x.d).sort((a, b) => b.d - a.d)[0];
+  selectedId = fallback ? fallback.p.id : (products[0] && products[0].id);
+
+  sel.innerHTML = products.map(p =>
+    `<option value="${p.id}">${p.id} · ${p.name} · ${p.date}</option>`).join('');
+  if (selectedId) sel.value = selectedId;
+}
+
+// --- отрисовка ---------------------------------------------------------------
+function render() {
+  const p = products.find(x => x.id === selectedId);
+  if (!p) return;
+  const launch = parseRuDate(p.date);
+  const durDays = flightDays(p.duration);
+
+  $('routeChip').textContent = p.kind + ' · ' + p.duration + ' · перегрузки ' + p.max_g;
+
+  if (!launch) {
+    $('countdownHost').innerHTML = '<p>Дата старта не распознана.</p>';
+  } else {
+    const diff = launch - new Date();
+    if (diff <= 0) {
+      const end = launch.getTime() + (durDays + 10) * 86400000;
+      $('countdownHost').innerHTML = Date.now() < end
+        ? '<div class="cd-done">🚀 Старт состоялся — программа полёта идёт по плану.</div>'
+        : '<div class="cd-done">✅ Полёт завершён: маршрут пройден полностью.</div>';
+    } else {
+      $('countdownHost').innerHTML = `
+        <div class="countdown" data-deadline="${launch.getTime()}">
+          <div class="cd-box"><b>—</b><span>дней</span></div>
+          <div class="cd-box"><b>—</b><span>часов</span></div>
+          <div class="cd-box"><b>—</b><span>минут</span></div>
+          <div class="cd-box"><b>—</b><span>секунд</span></div>
+        </div>`;
+      tick();
+    }
+  }
+
+  // прогресс всего маршрута: от T-180 до T+10 после посадки
+  const start = launch ? launch.getTime() - 180 * 86400000 : null;
+  const end = launch ? launch.getTime() + (durDays + 10) * 86400000 : null;
+  let pct = 0;
+  if (start && end) pct = Math.max(0, Math.min(100, (Date.now() - start) / (end - start) * 100));
+  $('routeBar').style.width = pct.toFixed(1) + '%';
+
+  // текущий этап
+  const dayNow = launch ? (Date.now() - launch.getTime()) / 86400000 : null;
+  const items = [...document.querySelectorAll('#tl li')];
+  let current = null;
+
+  items.forEach(li => {
+    const from = parseFloat(li.dataset.from);
+    const to = parseFloat(li.dataset.to);
+    let state = 'future';
+    if (dayNow !== null) {
+      if (dayNow < from) state = 'future';
+      else if (dayNow < to || (to - from < 0.2 && Math.abs(dayNow - from) < 0.5)) state = 'now';
+      else state = 'done';
+    }
+    if (state === 'now') current = li;
+    li.classList.remove('done', 'now', 'future');
+    li.classList.add(state);
+    const tag = li.querySelector('.tl-tag');
+    if (tag) tag.textContent = state === 'done' ? 'пройдено' : (state === 'now' ? 'сейчас' : 'впереди');
+  });
+
+  if (dayNow === null) {
+    $('routeNow').textContent = 'Выберите рейс, чтобы увидеть текущий этап.';
+  } else if (current) {
+    $('routeNow').innerHTML = 'Сейчас: <b>' + current.querySelector('b').textContent +
+      '</b> — ' + current.querySelector('span').textContent;
+  } else if (dayNow < -180) {
+    $('routeNow').textContent = 'До начала программы ещё более 180 дней — подготовка не начиналась.';
+  } else {
+    $('routeNow').textContent = 'Маршрут полностью пройден: все 7 этапов завершены.';
+  }
+}
+
+function tick() {
+  const box = document.querySelector('.countdown[data-deadline]');
+  if (!box) return;
+  const diff = +box.dataset.deadline - Date.now();
+  if (diff <= 0) { render(); return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor(diff / 3600000) % 24;
+  const m = Math.floor(diff / 60000) % 60;
+  const s = Math.floor(diff / 1000) % 60;
+  const pad = n => String(n).padStart(2, '0');
+  const cells = box.querySelectorAll('b');
+  [d, pad(h), pad(m), pad(s)].forEach((v, i) => { if (cells[i]) cells[i].textContent = v; });
+}
+
+// --- события -----------------------------------------------------------------
+$('flightSel').addEventListener('change', e => {
+  selectedId = e.target.value;
+  render();
+});
+
+document.getElementById('tl').addEventListener('click', e => {
+  const li = e.target.closest('li');
+  if (li) li.classList.toggle('open');
+});
+
+// кнопка чек-листа: профиль для вошедших, регистрация — для гостей
+OrbAuth.onReady(() => {
+  const cta = document.querySelector('.hero-actions .btn');
+  if (OrbAuth.current() && cta) {
+    cta.href = 'profile.html';
+    cta.textContent = 'Открыть мой чек-лист';
+  }
+});
+
+// --- старт -------------------------------------------------------------------
+(async function init() {
+  const res = await OrbitaApi.products();
+  products = (res && res.products) || [];
+  if (!products.length) {
+    $('countdownHost').innerHTML = '<p>Каталог рейсов недоступен.</p>';
+    return;
+  }
+  initSelect();
+  render();
+  timer = setInterval(tick, 1000);
+  setInterval(render, 60000);   // пересчёт состояния этапов
+})();
+</script>
+</body>
+</html>
