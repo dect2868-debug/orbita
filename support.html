@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Поддержка · ORBITA</title>
+<meta name="description" content="Служба поддержки сервиса ORBITA: на вопросы отвечает нейросеть, при её недоступности — база знаний проекта.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Поддержка</div>
+  <span class="eyebrow">Служба поддержки</span>
+  <h1>Отвечает нейросеть</h1>
+  <p class="lead">Опишите вопрос своими словами — ассистент ORBITA отвечает с помощью нейросети.
+  Если она временно недоступна, ответит встроенная база знаний проекта.</p>
+</section>
+
+<section class="section">
+  <div class="chat-layout">
+    <aside class="panel chat-side">
+      <h2><span class="ic">⚡</span> Быстрые вопросы</h2>
+      <div class="chips" id="chips">
+        <button type="button">Сколько стоит орбитальный полёт?</button>
+        <button type="button">Как отменить билет и вернуть деньги?</button>
+        <button type="button">Как пополнить баланс профиля?</button>
+        <button type="button">Как проходит подготовка к полёту?</button>
+        <button type="button">Какие перегрузки бывают?</button>
+        <button type="button">Как войти в личный кабинет?</button>
+      </div>
+      <div class="data-list" style="margin-top:18px">
+        <div><span>Источник ответа</span><b id="srcState">нейросеть</b></div>
+        <div><span>Режим данных</span><b id="modeState">…</b></div>
+        <div><span>Сообщений</span><b id="msgCount">0</b></div>
+      </div>
+      <div class="actions" style="margin-top:16px">
+        <button class="btn btn-ghost" type="button" id="clearBtn">Очистить диалог</button>
+      </div>
+      <p class="hint">Демонстрационный проект: ответы формирует нейросеть по материалам исследования.
+      Не отправляйте в чат реальные персональные данные и данные карт.</p>
+    </aside>
+
+    <div class="panel chat-card">
+      <div class="chat-head">
+        <span class="avatar-sm">◍</span>
+        <div>
+          <b>Ассистент ORBITA</b>
+          <span id="statusLine">на связи · отвечает нейросеть</span>
+        </div>
+        <span class="online-dot" title="онлайн"></span>
+      </div>
+
+      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+
+      <form class="chat-form" id="chatForm">
+        <input id="chatInput" type="text" autocomplete="off"
+               placeholder="Например: сколько стоит полёт к станции?" maxlength="1000">
+        <button class="btn" type="submit" id="sendBtn">Отправить</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const LS_KEY = 'orbita_support_history';
+let history = [];
+let busy = false;
+
+// резервные ответы, если сервер/нейросеть недоступны (автономный режим)
+const LOCAL_FALLBACK = [
+  [['отмен', 'возврат', 'вернуть'], 'Отменить билет можно в личном кабинете, раздел «Мои билеты»: кнопка «Отменить билет». Сумма покупки вернётся на баланс профиля.'],
+  [['баланс', 'пополн'], 'Баланс пополняется в личном кабинете кнопкой «Пополнить» (от 1 000 до 5 000 000 ₽). Новым пользователям начисляется демо-бонус 500 000 ₽.'],
+  [['цена', 'стоит', 'сколько'], 'Суборбитальный полёт — 450 000 ₽, орбитальный — 3 500 000 ₽, полёт к станции — 7 800 000 ₽, лунная программа — 120 000 000 ₽.'],
+  [['оплат', 'карт', '3-d', 'secure'], 'Оплата: с баланса в один клик или картой через заглушку эквайринга, код 3-D Secure в демо-режиме — 1234.'],
+  [['подготов', 'медицин', 'трениров'], 'Подготовка — чек-лист из 6 этапов в профиле: медосмотр, курс физики, кардиотренировки, центрифуга, брифинг, отчёт.']
+];
+
+function loadHistory() {
+  try { history = JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { history = []; }
+}
+
+function saveHistory() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(history.slice(-40))); } catch {}
+}
+
+function scrollDown() {
+  const log = $('chatLog');
+  log.scrollTop = log.scrollHeight;
+}
+
+function renderMsg(m) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (m.role === 'user' ? 'me' : 'bot');
+  div.innerHTML = `<div class="bubble">${esc(m.text)}</div>` +
+    (m.role === 'bot'
+      ? `<div class="msg-meta">${m.source === 'faq' ? 'база знаний' : 'нейросеть'}</div>` : '');
+  $('chatLog').appendChild(div);
+}
+
+function renderAll() {
+  $('chatLog').innerHTML = '';
+  history.forEach(renderMsg);
+  $('msgCount').textContent = history.length;
+  scrollDown();
+}
+
+function pushMsg(role, text, source) {
+  history.push({ role, text, source, at: Date.now() });
+  saveHistory();
+  renderMsg({ role, text, source });
+  $('msgCount').textContent = history.length;
+  scrollDown();
+}
+
+function showTyping(on) {
+  let t = document.getElementById('typing');
+  if (on) {
+    if (t) return;
+    t = document.createElement('div');
+    t.id = 'typing';
+    t.className = 'msg bot';
+    t.innerHTML = '<div class="bubble typing"><i></i><i></i><i></i></div>' +
+                  '<div class="msg-meta">нейросеть печатает…</div>';
+    $('chatLog').appendChild(t);
+    scrollDown();
+  } else if (t) {
+    t.remove();
+  }
+}
+
+function localAnswer(text) {
+  const low = text.toLowerCase();
+  for (const [keys, answer] of LOCAL_FALLBACK) {
+    if (keys.some(k => low.includes(k))) return { reply: answer, source: 'faq' };
+  }
+  return {
+    reply: 'Сервер поддержки сейчас недоступен, поэтому отвечу коротко: спросите о ценах на рейсы, оплате, отмене билета, балансе или подготовке — эти темы я знаю точно. Как только связь восстановится, подключится нейросеть.',
+    source: 'faq'
+  };
+}
+
+async function ask(text) {
+  const messages = history
+    .filter(m => m.text)
+    .slice(-10)
+    .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+  messages.push({ role: 'user', content: text });
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 80000);   // нейросеть может отвечать до ~60 с с повторами
+    const headers = { 'Content-Type': 'application/json' };
+    const tok = localStorage.getItem('orbita_token');
+    if (tok) headers['Authorization'] = 'Bearer ' + tok;   // чтобы нейросеть знала, кто задаёт вопрос
+    const res = await fetch('/api/support', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ messages }),
+      signal: ctrl.signal
+    });
+    clearTimeout(timer);
+    const data = await res.json();
+    if (data.ok && data.reply) return { reply: data.reply, source: data.source || 'neuro' };
+    return localAnswer(text);
+  } catch {
+    return localAnswer(text);
+  }
+}
+
+async function send(text) {
+  text = (text || '').trim();
+  if (!text || busy) return;
+  busy = true;
+  $('sendBtn').disabled = true;
+  $('chatInput').value = '';
+  pushMsg('user', text);
+  showTyping(true);
+  const started = Date.now();
+  const ans = await ask(text);
+  // typing-индикатор держим минимум 700 мс, чтобы не мигало
+  const wait = Math.max(0, 700 - (Date.now() - started));
+  setTimeout(() => {
+    showTyping(false);
+    pushMsg('bot', ans.reply, ans.source);
+    $('srcState').textContent = ans.source === 'faq' ? 'база знаний' : 'нейросеть';
+    busy = false;
+    $('sendBtn').disabled = false;
+    $('chatInput').focus();
+  }, wait);
+}
+
+$('chatForm').addEventListener('submit', e => {
+  e.preventDefault();
+  send($('chatInput').value);
+});
+
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (b) send(b.textContent);
+});
+
+$('clearBtn').addEventListener('click', () => {
+  history = [];
+  saveHistory();
+  renderAll();
+  pushMsg('bot', 'Диалог очищен. Задайте новый вопрос — я отвечу с помощью нейросети.', 'neuro');
+});
+
+// старт
+loadHistory();
+renderAll();
+if (!history.length) {
+  pushMsg('bot',
+    'Здравствуйте! Я — ассистент поддержки ORBITA, отвечаю с помощью нейросети. ' +
+    'Спросите о рейсах и ценах, оплате, отмене билета, балансе или подготовке к полёту.',
+    'neuro');
+}
+OrbAuth.onReady(() => {
+  const u = OrbAuth.current();
+  $('modeState').textContent = OrbAuth.mode() === 'server' ? 'сервер проекта' : 'автономный';
+  $('statusLine').textContent = u
+    ? 'на связи · вы: ' + u.name.split(' ')[0]
+    : 'на связи · отвечает нейросеть';
+  $('chatInput').focus();
+});
+document.addEventListener('orb:changed', () => {
+  const u = OrbAuth.current();
+  $('statusLine').textContent = u
+    ? 'на связи · вы: ' + u.name.split(' ')[0]
+    : 'на связи · отвечает нейросеть';
+});
+</script>
+</body>
+</html>
