@@ -87,6 +87,7 @@
         birth: data.birth || '',
         city: data.city || '',
         phone: '', passport: '',
+        role: 'user',
         balance: 500000,
         tasks: {},
         created: new Date().toISOString()
@@ -281,6 +282,119 @@
         return r;
       }
       return { ok: false, errors: ['Неизвестный тип платежа.'] };
+    },
+
+    // ---------- администрирование (панель работает и без сервера) ----------
+    // роли: 'user' | 'moderator' | 'admin'.
+    // Модератор: статистика, пользователи, билеты, балансы, возвраты.
+    // Администратор: плюс управление ролями и удаление.
+    localStaff() {
+      const me = OrbAuth.current();
+      return !!(me && (me.role === 'admin' || me.role === 'moderator'));
+    },
+
+    adminLocal(fn, needAdmin) {
+      if (!OrbitaApi.localStaff())
+        return { ok: false, errors: ['Требуются права администратора или модератора.'] };
+      if (needAdmin && OrbAuth.current().role !== 'admin')
+        return { ok: false, errors: ['Действие доступно только администратору.'] };
+      return fn();
+    },
+
+    async adminStats() {
+      if (mode === 'server') return call('/api/admin/stats');
+      return OrbitaApi.adminLocal(() => {
+        const users = localUsers(), tickets = localTickets();
+        const paid = tickets.filter(t => t.status === 'paid');
+        return { ok: true, stats: {
+          users: users.length,
+          admins: users.filter(u => u.role === 'admin').length,
+          balance_total: users.reduce((s, u) => s + (u.balance || 0), 0),
+          tickets: tickets.length,
+          tickets_paid: paid.length,
+          revenue: paid.reduce((s, t) => s + (t.price || 0), 0),
+          tx: 0,
+          products: LOCAL_PRODUCTS.length
+        }};
+      });
+    },
+
+    async adminUsers() {
+      if (mode === 'server') return call('/api/admin/users');
+      return OrbitaApi.adminLocal(() => {
+        const busy = {};
+        localTickets().forEach(t => {
+          if (t.status === 'paid') busy[t.email] = (busy[t.email] || 0) + 1;
+        });
+        const out = localUsers().map(u =>
+          Object.assign(localUserFrom(u), { tickets: busy[u.email] || 0 }));
+        out.sort((a, b) => String(b.created || '').localeCompare(String(a.created || '')));
+        return { ok: true, users: out };
+      });
+    },
+
+    async adminUserAction(payload) {
+      if (mode === 'server') return call('/api/admin/user', 'POST', payload);
+      return OrbitaApi.adminLocal(() => {
+        const me = OrbAuth.current();
+        const list = localUsers();
+        const target = list.find(u => u.email === payload.email);
+        if (!target) return { ok: false, errors: ['Пользователь не найден.'] };
+
+        if (payload.action === 'set_balance') {
+          const value = parseInt(payload.value, 10);
+          if (isNaN(value) || value < 0 || value > 10 ** 12)
+            return { ok: false, errors: ['Баланс должен быть числом от 0 до 1 000 000 000 000 ₽.'] };
+          target.balance = value;
+          localSave(list);
+        } else if (payload.action === 'set_role') {
+          if (target.email === me.email)
+            return { ok: false, errors: ['Нельзя изменить роль собственного аккаунта.'] };
+          target.role = ['admin', 'moderator', 'user'].includes(payload.role) ? payload.role : 'user';
+          localSave(list);
+        } else if (payload.action === 'delete') {
+          if (target.email === me.email)
+            return { ok: false, errors: ['Нельзя удалить собственный аккаунт.'] };
+          localSave(list.filter(u => u.email !== payload.email));
+          writeJSON(K.tickets, localTickets().filter(t => t.email !== payload.email));
+        } else {
+          return { ok: false, errors: ['Неизвестное действие.'] };
+        }
+        return { ok: true };
+      }, payload.action !== 'set_balance');
+    },
+
+    async adminTickets() {
+      if (mode === 'server') return call('/api/admin/tickets');
+      return OrbitaApi.adminLocal(() => {
+        const out = localTickets().slice()
+          .sort((a, b) => String(b.created || '').localeCompare(String(a.created || '')));
+        return { ok: true, tickets: out };
+      });
+    },
+
+    async adminTicketAction(payload) {
+      if (mode === 'server') return call('/api/admin/ticket', 'POST', payload);
+      return OrbitaApi.adminLocal(() => {
+        const tickets = localTickets();
+        const t = tickets.find(x => x.id === payload.ticket_id);
+        if (!t) return { ok: false, errors: ['Билет не найден.'] };
+
+        if (payload.action === 'cancel') {
+          if (t.status !== 'paid') return { ok: false, errors: ['Билет уже отменён.'] };
+          t.status = 'cancelled';
+          t.cancelled_at = new Date().toISOString();
+          writeJSON(K.tickets, tickets);
+          const list = localUsers();
+          const owner = list.find(u => u.email === t.email);
+          if (owner) { owner.balance = (owner.balance || 0) + (t.price || 0); localSave(list); }
+        } else if (payload.action === 'delete') {
+          writeJSON(K.tickets, tickets.filter(x => x.id !== payload.ticket_id));
+        } else {
+          return { ok: false, errors: ['Неизвестное действие.'] };
+        }
+        return { ok: true, ticket: t };
+      }, payload.action === 'delete');
     }
   };
 
