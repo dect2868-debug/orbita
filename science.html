@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Научная основа · ORBITA</title>
+<meta name="description" content="Три гипотезы, методы исследования и модель прогноза укачивания в проекте ORBITA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Наука</div>
+  <span class="eyebrow">02 · Научная основа</span>
+  <h1>Три гипотезы, которые мы проверяем</h1>
+  <p class="lead">Исследование опирается на анализ данных реальных полётов, экспертные интервью,
+  моделирование нагрузок и прототипирование с юзабилити-тестированием.</p>
+</section>
+
+<section class="section section-dark">
+  <div class="hypotheses">
+    <div class="hyp">
+      <span class="hyp-num">H₁</span>
+      <div>
+        <h4>Персональный профиль снижает стресс адаптации</h4>
+        <p>Индивидуальный план подготовки на основе тестов и кардиореспираторных показателей уменьшает оценку тревожности перед полётом не менее чем на 25 %.</p>
+        <div class="bar"><i style="--w:78%"></i><span>ожидаемый эффект</span></div>
+      </div>
+    </div>
+    <div class="hyp">
+      <span class="hyp-num">H₂</span>
+      <div>
+        <h4>Прогноз укачивания повышает безопасность плана</h4>
+        <p>Модель на данных свободного полёта предсказывает тошноту (NSS) со скоростью за 6 часов до дебюта с точностью ≥ 0.85 AUC.</p>
+        <div class="bar"><i style="--w:85%"></i><span>целевая точность</span></div>
+      </div>
+    </div>
+    <div class="hyp">
+      <span class="hyp-num">H₃</span>
+      <div>
+        <h4>Единый контур данных сокращает ошибки координации</h4>
+        <p>Централизованный обмен сокращает число передач данных между службами на 60 % и время реакции наземной группы на инцидент — на 40 %.</p>
+        <div class="bar"><i style="--w:60%"></i><span>сокращение передач</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">Методика</span>
+    <h2>Методы исследования</h2>
+  </div>
+  <ul class="ticks" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <li>Анализ открытых данных полётов Blue Origin, Virgin Galactic, SpaceX (2021–2025)</li>
+    <li>Экспертное интервью: 15 специалистов центров подготовки</li>
+    <li>Моделирование профиля нагрузок (симуляция 0 g / 0,3 g / 1 g)</li>
+    <li>Прототипирование MVP и юзабилити-тестирование (n = 40)</li>
+    <li>Статистическая проверка гипотез: t-тест, доверительный интервал 95 %</li>
+    <li>Классификация состояний: логистическая регрессия и градиентный бустинг</li>
+  </ul>
+
+  <div class="methods">
+    <h3>Ожидаемые результаты</h3>
+    <div class="grid-3" style="margin-top:14px">
+      <div class="card"><h3>Прогноз</h3><p>Модель с AUC ≥ 0.85, обновляемая по данным носимых датчиков путешественника.</p></div>
+      <div class="card"><h3>Контур данных</h3><p>Единый протокол обмена между медцентром, оператором и наземной группой.</p></div>
+      <div class="card"><h3>Прототип</h3><p>Рабочий MVP с регистрацией, планом подготовки и чек-листом этапов.</p></div>
+    </div>
+  </div>
+
+  <div class="hero-actions" style="margin-top:40px">
+    <a href="modules.html" class="btn">Архитектура сервиса →</a>
+    <a href="econ.html" class="btn btn-ghost">Показатели эффективности</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
