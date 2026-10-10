@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор полёта · ORBITA</title>
+<meta name="description" content="Подбор космической программы по бюджету, длительности и переносимости перегрузок: рекомендация рейса, оценка пакета и обратный отсчёт до старта.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Калькулятор</div>
+  <span class="eyebrow">08 · Подбор программы</span>
+  <h1>Калькулятор полёта</h1>
+  <p class="lead">Задайте бюджет, желаемую длительность и переносимость перегрузок — сервис подберёт
+  подходящий рейс, оценит пакет с дополнительными услугами и покажет обратный отсчёт до старта.</p>
+</section>
+
+<section class="section">
+  <div class="calc-grid">
+    <!-- ПАРАМЕТРЫ -->
+    <div class="panel">
+      <h2><span class="ic">🎛</span> Ваши параметры</h2>
+
+      <div class="quick-sums" id="presets">
+        <button type="button" data-preset="first">Первый полёт</button>
+        <button type="button" data-preset="comfort">Комфорт</button>
+        <button type="button" data-preset="expedition">Экспедиция</button>
+      </div>
+
+      <div class="field" style="margin-top:22px">
+        <label for="budget">Бюджет · <b class="calc-out" id="budgetOut">—</b></label>
+        <input type="range" id="budget" min="0" max="100" value="42" step="1">
+      </div>
+
+      <div class="field">
+        <label for="dur">Желаемая длительность · <b class="calc-out" id="durOut">—</b></label>
+        <input type="range" id="dur" min="0" max="3" value="1" step="1">
+      </div>
+
+      <div class="field">
+        <label>Переносимость перегрузок</label>
+        <div class="quick-sums" id="tol">
+          <button type="button" data-g="3">до 3 g</button>
+          <button type="button" data-g="4" class="on">до 4 g</button>
+          <button type="button" data-g="6">до 6 g</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Дополнительные услуги пакета</label>
+        <div class="extras" id="extras">
+          <label class="check"><input type="checkbox" data-pct="12"><span>Расширенная страховка полёта <em>+12 %</em></span></label>
+          <label class="check"><input type="checkbox" data-pct="8"><span>Медсопровождение на борту <em>+8 %</em></span></label>
+          <label class="check"><input type="checkbox" data-pct="5"><span>Научная программа наблюдений <em>+5 %</em></span></label>
+          <label class="check"><input type="checkbox" data-pct="3"><span>Фото- и видеосъёмка на борту <em>+3 %</em></span></label>
+        </div>
+      </div>
+
+      <p class="hint">Подбор демонстрационный: услуги пакета оцениваются предварительно,
+      билет оплачивается по фиксированной цене рейса.</p>
+    </div>
+
+    <!-- РЕЗУЛЬТАТ -->
+    <div class="panel calc-res" id="result"><p>Загрузка каталога рейсов…</p></div>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Альтернативы</span>
+    <h2>Все рейсы и оценка подбора</h2>
+    <p>Нажмите на карточку, чтобы рассчитать именно этот рейс. Автоподбор вернётся кнопкой в результате.</p>
+  </div>
+  <div class="grid-4" id="altList"><p>Загрузка…</p></div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
+
+// --- даты и длительности -----------------------------------------------------
+const MONTHS = {'января':0,'февраля':1,'марта':2,'апреля':3,'мая':4,'июня':5,'июля':6,
+  'августа':7,'сентября':8,'октября':9,'ноября':10,'декабря':11};
+
+function parseRuDate(str) {
+  const m = String(str || '').match(/(\d{1,2})\s+([а-яё]+)\s+(\d{4})/i);
+  if (!m) return null;
+  const mo = MONTHS[m[2].toLowerCase()];
+  if (mo === undefined) return null;
+  return new Date(+m[3], mo, +m[1], 9, 0, 0);   // старт в 09:00 по местному времени
+}
+
+function parseDur(str) {          // '15 минут' | '3 дня' → минуты
+  const n = parseInt(str, 10) || 0;
+  const s = String(str || '').toLowerCase();
+  if (s.includes('дн')) return n * 1440;
+  return n;
+}
+
+const DUR_STEPS = [
+  {label:'15 минут', min:15},
+  {label:'3 дня',    min:3 * 1440},
+  {label:'7 дней',   min:7 * 1440},
+  {label:'12 дней',  min:12 * 1440}
+];
+
+// бюджет по логарифмической шкале слайдера
+const B_MIN = 400000, B_MAX = 130000000;
+const sliderToBudget = v => Math.round(B_MIN * Math.pow(B_MAX / B_MIN, v / 100) / 10000) * 10000;
+
+const PRESETS = {
+  first:     {budget: 45,  dur: 0, g: 3, extras: []},
+  comfort:   {budget: 68,  dur: 2, g: 4, extras: [0, 1]},
+  expedition:{budget: 100, dur: 3, g: 6, extras: [0, 1, 2, 3]}
+};
+
+let products = [];
+let forcedId = null;               // рейс, выбранный вручную из альтернатив
+
+function state() {
+  const extras = [...document.querySelectorAll('#extras input')]
+    .filter(i => i.checked).map(i => +i.dataset.pct);
+  return {
+    budget: sliderToBudget(+$('budget').value),
+    durIdx: +$('dur').value,
+    tol: +(document.querySelector('#tol .on')?.dataset.g || 4),
+    extras
+  };
+}
+
+// --- подбор ------------------------------------------------------------------
+function scoreFlight(p, st) {
+  const g = parseFloat(p.max_g) || 3;
+  const durMin = parseDur(p.duration);
+  const want = DUR_STEPS[st.durIdx].min;
+  const durFit = 1 - Math.min(1, Math.abs(durMin - want) / Math.max(durMin, want));
+  const gOk = g <= st.tol + .01;
+  const affordable = p.price <= st.budget;
+  let score = durFit * 55 + (gOk ? 25 : 0) + (affordable ? 20 : 0);
+  if (p.seats <= 0) score -= 40;
+  return {p, score: Math.max(0, Math.round(score)), gOk, affordable, durFit};
+}
+
+function countdownHtml(date) {
+  if (!date) return '<p class="hint">Дата старта этого рейса не распознана.</p>';
+  const diff = date - new Date();
+  if (diff <= 0) return '<div class="cd-done">Старт состоялся — рейс уже выполнен.</div>';
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor(diff / 3600000) % 24;
+  const m = Math.floor(diff / 60000) % 60;
+  const s = Math.floor(diff / 1000) % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return `<div class="countdown" data-deadline="${date.getTime()}">
+    <div class="cd-box"><b>${d}</b><span>дней</span></div>
+    <div class="cd-box"><b>${pad(h)}</b><span>часов</span></div>
+    <div class="cd-box"><b>${pad(m)}</b><span>минут</span></div>
+    <div class="cd-box"><b>${pad(s)}</b><span>секунд</span></div>
+  </div>`;
+}
+
+// живой отсчёт: раз в секунду обновляем все блоки на странице
+setInterval(() => {
+  document.querySelectorAll('.countdown[data-deadline]').forEach(box => {
+    const diff = +box.dataset.deadline - Date.now();
+    if (diff <= 0) { location.reload(); return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor(diff / 3600000) % 24;
+    const m = Math.floor(diff / 60000) % 60;
+    const s = Math.floor(diff / 1000) % 60;
+    const pad = n => String(n).padStart(2, '0');
+    const cells = box.querySelectorAll('b');
+    [d, pad(h), pad(m), pad(s)].forEach((v, i) => { if (cells[i]) cells[i].textContent = v; });
+  });
+}, 1000);
+
+// --- отрисовка результата ----------------------------------------------------
+function renderResult() {
+  const st = state();
+  $('budgetOut').textContent = money(st.budget);
+  $('durOut').textContent = DUR_STEPS[st.durIdx].label;
+
+  if (!products.length) { $('result').innerHTML = '<p>Каталог рейсов пуст.</p>'; return; }
+
+  const scored = products.map(p => scoreFlight(p, st)).sort((a, b) => b.score - a.score);
+  const best = forcedId
+    ? (scored.find(s => s.p.id === forcedId) || scored[0])
+    : scored[0];
+
+  const p = best.p;
+  const launch = parseRuDate(p.date);
+  const extrasSum = Math.round(p.price * st.extras.reduce((a, b) => a + b, 0) / 100);
+  const total = p.price + extrasSum;
+  const me = window.OrbAuth ? OrbAuth.current() : null;
+  const balance = me ? (me.balance || 0) : null;
+
+  const budgetNote = best.affordable
+    ? `<span class="fit-ok">вписывается в бюджет</span>`
+    : `<span class="fit-warn">превышает бюджет на ${money(p.price - st.budget)} — рассмотрите
+       <button type="button" class="link-btn" data-auto>автоподбор</button> или
+       <a href="payment.html?kind=topup&amount=500000">пополните баланс</a></span>`;
+
+  const gNote = best.gOk
+    ? `<span class="fit-ok">перегрузки в вашем лимите (${st.tol} g)</span>`
+    : `<span class="fit-warn">перегрузки выше вашего лимита (${st.tol} g)</span>`;
+
+  const balanceRow = me
+    ? (balance >= p.price
+        ? `Баланса ${money(balance)} хватает на билет, останется ${money(balance - p.price)}.`
+        : `Не хватает ${money(p.price - balance)} к покупке с баланса.`)
+    : `Войдите в профиль — покажем, хватает ли баланса на билет в один клик.`;
+
+  const buyBtn = me && balance >= p.price
+    ? `<button type="button" class="btn" data-buy="${esc(p.id)}"${p.seats <= 0 ? ' disabled' : ''}>Купить с баланса</button>`
+    : `<a class="btn" href="payment.html?kind=order&product=${esc(p.id)}"${p.seats <= 0 ? ' aria-disabled="true"' : ''}>Оплатить картой</a>`;
+
+  $('result').innerHTML = `
+    <div class="calc-head">
+      <div>
+        <span class="badge">${esc(p.id)}</span>
+        <h2 style="margin-top:12px">${esc(p.name)}</h2>
+        <p style="font-size:.9rem;margin-top:6px">${esc(p.desc || '')}</p>
+      </div>
+      <div class="calc-score" title="Насколько рейс подходит под ваши параметры">
+        <b>${best.score}</b><span>% подбор</span>
+      </div>
+    </div>
+
+    <ul class="product-specs">
+      <li><span>Категория</span><b>${esc(p.kind)}</b></li>
+      <li><span>Дата старта</span><b>${esc(p.date)}</b></li>
+      <li><span>Длительность</span><b>${esc(p.duration)}</b></li>
+      <li><span>Перегрузки</span><b>${esc(p.max_g)}</b></li>
+      <li><span>Свободно мест</span><b>${p.seats > 0 ? p.seats : 'нет мест'}</b></li>
+    </ul>
+
+    <div class="calc-notes">${budgetNote} · ${gNote}</div>
+
+    <h3 style="margin:22px 0 10px">Обратный отсчёт до старта</h3>
+    ${countdownHtml(launch)}
+
+    <h3 style="margin:24px 0 10px">Оценка пакета</h3>
+    <div class="order-box">
+      <div class="order-row"><span>Билет · ${esc(p.id)}</span><b>${money(p.price)}</b></div>
+      ${st.extras.length
+        ? st.extras.map(pct => `<div class="order-row"><span>Доп. услуга +${pct} %</span><b>${money(Math.round(p.price * pct / 100))}</b></div>`).join('')
+        : '<div class="order-row"><span>Доп. услуги</span><b>не выбраны</b></div>'}
+      <div class="order-row"><span class="big">Итого пакет</span><b class="big">${money(total)}</b></div>
+    </div>
+    <p class="hint" style="margin-top:0">${balanceRow}</p>
+
+    <div class="actions" style="margin-top:18px">
+      ${buyBtn}
+      ${forcedId ? '<button type="button" class="btn btn-ghost" data-auto>↺ Автоподбор</button>' : ''}
+      <a class="btn btn-ghost" href="tickets.html">Все рейсы →</a>
+    </div>`;
+
+  renderAlts(scored, p.id);
+}
+
+function renderAlts(scored, activeId) {
+  $('altList').innerHTML = scored.map(s => `
+    <button type="button" class="alt-card${s.p.id === activeId ? ' on' : ''}" data-alt="${esc(s.p.id)}">
+      <span class="num">${esc(s.p.id)}</span>
+      <h3>${esc(s.p.name)}</h3>
+      <p>${esc(s.p.duration)} · ${esc(s.p.max_g)}</p>
+      <div class="alt-foot">
+        <b>${money(s.p.price)}</b>
+        <span class="alt-score">${s.score} %</span>
+      </div>
+    </button>`).join('');
+}
+
+// --- события -----------------------------------------------------------------
+$('budget').addEventListener('input', () => { forcedId = null; renderResult(); });
+$('dur').addEventListener('input', () => { forcedId = null; renderResult(); });
+
+$('tol').addEventListener('click', e => {
+  const b = e.target.closest('button[data-g]');
+  if (!b) return;
+  document.querySelectorAll('#tol button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  forcedId = null;
+  renderResult();
+});
+
+$('extras').addEventListener('change', renderResult);
+
+$('presets').addEventListener('click', e => {
+  const b = e.target.closest('button[data-preset]');
+  if (!b) return;
+  const pr = PRESETS[b.dataset.preset];
+  if (!pr) return;
+  $('budget').value = pr.budget;
+  $('dur').value = pr.dur;
+  document.querySelectorAll('#tol button').forEach(x =>
+    x.classList.toggle('on', +x.dataset.g === pr.g));
+  document.querySelectorAll('#extras input').forEach((i, idx) =>
+    i.checked = pr.extras.includes(idx));
+  forcedId = null;
+  renderResult();
+});
+
+$('result').addEventListener('click', async e => {
+  const auto = e.target.closest('[data-auto]');
+  if (auto) { forcedId = null; renderResult(); return; }
+  const buy = e.target.closest('[data-buy]');
+  if (!buy) return;
+  buy.disabled = true;
+  const r = await OrbitaApi.buyBalance(buy.dataset.buy);
+  if (r.ok) {
+    alert('Билет ' + r.ticket.id + ' оформлен! Баланс: ' + money(r.balance) + '.');
+    document.dispatchEvent(new Event('orb:changed'));
+    location.href = 'profile.html';
+  } else {
+    alert((r.errors || ['Не удалось купить билет'])[0]);
+    buy.disabled = false;
+  }
+});
+
+$('altList').addEventListener('click', e => {
+  const card = e.target.closest('[data-alt]');
+  if (!card) return;
+  forcedId = card.dataset.alt;
+  renderResult();
+  $('result').scrollIntoView({behavior: 'smooth', block: 'center'});
+});
+
+// --- старт -------------------------------------------------------------------
+(async function init() {
+  const res = await OrbitaApi.products();
+  products = (res && res.products) || [];
+  renderResult();
+  // если пользователь уже вошёл — перерисовываем результат с его балансом
+  if (window.OrbAuth) OrbAuth.onReady(renderResult);
+})();
+</script>
+</body>
+</html>
