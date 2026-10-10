@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оплата · ORBITA Pay</title>
+<meta name="description" content="Заглушка платёжного шлюза: оплата картой и 3-D Secure для покупки билета или пополнения баланса.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card wide" id="payCard">
+    <div class="pay-brand">
+      <span class="pay-logo">◈ OrbitaPay</span>
+      <span class="pay-stub">заглушка эквайринга · демо</span>
+    </div>
+
+    <div class="order-box">
+      <div class="order-row"><span>Назначение</span><b id="oTitle">—</b></div>
+      <div class="order-row"><span>Сумма</span><b id="oAmount" class="big">—</b></div>
+      <div class="order-row"><span>Получатель</span><b>АО «ORBITA Travel»</b></div>
+      <div class="order-row"><span>Заказ</span><b id="oId">—</b></div>
+    </div>
+
+    <div class="alert" id="payAlert"></div>
+
+    <form id="payForm" novalidate>
+      <div class="field">
+        <label for="card">Номер карты</label>
+        <input id="card" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="19">
+      </div>
+      <div class="row-3">
+        <div class="field">
+          <label for="exp">ММ/ГГ</label>
+          <input id="exp" inputmode="numeric" autocomplete="cc-exp" placeholder="09/29" maxlength="5">
+        </div>
+        <div class="field">
+          <label for="cvc">CVC</label>
+          <input id="cvc" inputmode="numeric" autocomplete="cc-csc" placeholder="•••" maxlength="3" type="password">
+        </div>
+        <div class="field">
+          <label for="holder">Держатель</label>
+          <input id="holder" autocomplete="cc-name" placeholder="IVAN IVANOV">
+        </div>
+      </div>
+      <div class="field">
+        <label for="code">Код 3-D Secure</label>
+        <input id="code" inputmode="numeric" placeholder="••••" maxlength="4">
+      </div>
+
+      <div class="secure-note">
+        <b>Демо-режим:</b> код 3-D Secure — <b>1234</b>. Карта, оканчивающаяся на <b>0000</b>, отклоняется специально.
+        Введённые данные никуда не отправляются и нигде не сохраняются.
+      </div>
+
+      <button class="btn" type="submit" id="payBtn">Оплатить</button>
+      <a class="back-link" href="tickets.html">← Вернуться к выбору рейса</a>
+    </form>
+
+    <div id="paySuccess" hidden>
+      <div class="success-ic">✓</div>
+      <h1>Оплата прошла</h1>
+      <p class="auth-sub" id="successText">—</p>
+      <div class="actions" style="justify-content:center">
+        <a href="profile.html" class="btn">Личный кабинет</a>
+        <a href="tickets.html" class="btn btn-ghost">Другие рейсы</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
+const params = new URLSearchParams(location.search);
+const kind = params.get('kind') || 'topup';
+let amount = parseInt(params.get('amount'), 10) || 0;
+const productId = params.get('product');
+let product = null;
+
+function setAlert(type, html) {
+  const a = $('payAlert');
+  a.className = 'alert ' + type;
+  a.innerHTML = html;
+}
+
+OrbAuth.onReady(async () => {
+  if (!OrbAuth.current()) { location.href = 'login.html'; return; }
+
+  const res = await OrbitaApi.products();
+  product = (res.products || []).find(p => p.id === productId);
+
+  if (kind === 'order') {
+    if (!product) { setAlert('err', 'Рейс не найден. <a href="tickets.html">Вернуться в каталог</a>'); return; }
+    amount = product.price;
+    $('oTitle').textContent = product.name + ' · ' + product.date;
+  } else {
+    if (!amount) amount = 500000;
+    $('oTitle').textContent = 'Пополнение баланса профиля';
+  }
+
+  $('oAmount').textContent = money(amount);
+  $('oId').textContent = 'OR-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+});
+
+// маски ввода
+$('card').addEventListener('input', e => {
+  const d = e.target.value.replace(/\D/g, '').slice(0, 16);
+  e.target.value = d.replace(/(.{4})/g, '$1 ').trim();
+});
+$('exp').addEventListener('input', e => {
+  let d = e.target.value.replace(/\D/g, '').slice(0, 4);
+  if (d.length > 2) d = d.slice(0, 2) + '/' + d.slice(2);
+  e.target.value = d;
+});
+['cvc', 'code'].forEach(id => $(id).addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '');
+}));
+
+$('payForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('payBtn');
+  btn.disabled = true;
+  btn.textContent = 'Проверка в платёжной системе…';
+
+  const r = await OrbitaApi.payment({
+    kind, amount, product_id: productId,
+    card: $('card').value,
+    exp: $('exp').value,
+    cvc: $('cvc').value,
+    code: $('code').value
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Оплатить';
+
+  if (!r.ok) {
+    setAlert('err', '<ul>' + (r.errors || ['Ошибка оплаты.']).map(x => '<li>' + x + '</li>').join('') + '</ul>');
+    return;
+  }
+
+  $('payForm').hidden = true;
+  document.querySelector('.order-box').hidden = true;
+  $('paySuccess').hidden = false;
+  $('successText').textContent = kind === 'topup'
+    ? 'Баланс профиля пополнен на ' + money(r.amount || amount) + '. Новый баланс: ' + money(r.balance) + '.'
+    : 'Билет ' + r.ticket.id + ' оформлен: ' + r.ticket.name + ', место ' + r.ticket.seat + '.';
+  document.dispatchEvent(new Event('orb:changed'));
+  if (window.OrbAuth && r.user) { /* данные уже сохранены на сервере */ }
+});
+</script>
+</body>
+</html>
