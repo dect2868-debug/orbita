@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Билеты и рейсы · ORBITA</title>
+<meta name="description" content="Каталог космических рейсов: покупка билета с баланса профиля или оплата картой через заглушку эквайринга.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Билеты</div>
+  <span class="eyebrow">Каталог рейсов</span>
+  <h1>Купить билет в космос</h1>
+  <p class="lead">Оплата с баланса профиля или картой через заглушку эквайринга.
+  После покупки билет появится в личном кабинете с номером места.</p>
+</section>
+
+<section class="section">
+  <div class="buy-bar">
+    <div class="buy-bar-item">
+      <span>Ваш баланс</span>
+      <b id="barBalance">—</b>
+    </div>
+    <div class="buy-bar-item">
+      <span>Режим данных</span>
+      <b id="barMode">…</b>
+    </div>
+    <span id="barAuth"></span>
+  </div>
+
+  <div class="alert" id="shopAlert" style="margin-top:18px"></div>
+
+  <div class="products" id="products"><p>Загрузка рейсов…</p></div>
+
+  <p class="hint" style="margin-top:24px">
+    Демонстрационные данные федерального проекта: цены, даты и остаток мест моделируются сервисом.
+    Настоящие карточные данные не передаются — форма оплаты является заглушкой платёжного шлюза.
+  </p>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
+
+function show(msg, type) {
+  const a = $('shopAlert');
+  a.className = 'alert ' + (type || 'ok');
+  a.innerHTML = msg;
+}
+
+function updateBar(user) {
+  $('barBalance').textContent = user ? money(user.balance) : '—';
+  $('barMode').textContent = OrbAuth.mode() === 'server' ? 'сервер проекта' : 'автономный';
+  $('barAuth').innerHTML = user
+    ? '<a class="btn btn-small btn-ghost" href="profile.html">Личный кабинет</a>'
+    : '<a class="btn btn-small btn-ghost" href="login.html" target="_blank" rel="noopener" title="Вход откроется в отдельной вкладке">Войти · новая вкладка</a>' +
+      '<a class="btn btn-small" href="register.html" style="margin-left:10px">Регистрация</a>';
+}
+
+async function loadProducts() {
+  const res = await OrbitaApi.products();
+  const box = $('products');
+  if (!res.ok) { box.innerHTML = '<p>' + esc((res.errors || ['Ошибка'])[0]) + '</p>'; return; }
+  box.innerHTML = res.products.map(p => {
+    const out = p.seats <= 0;
+    return `
+    <article class="product${out ? ' soldout' : ''}">
+      <div class="product-head">
+        <span class="code">${esc(p.id)}</span>
+        <span class="kind">${esc(p.kind)}</span>
+      </div>
+      <h3>${esc(p.name)}</h3>
+      <p>${esc(p.desc)}</p>
+      <ul class="product-specs">
+        <li><span>Дата</span><b>${esc(p.date)}</b></li>
+        <li><span>Длительность</span><b>${esc(p.duration)}</b></li>
+        <li><span>Перегрузка</span><b>${esc(p.max_g)}</b></li>
+        <li><span>Свободных мест</span><b>${p.seats}</b></li>
+      </ul>
+      <div class="product-foot">
+        <div class="price">${money(p.price)}</div>
+        <div class="product-actions">
+          ${out
+            ? `<button class="btn btn-ghost" disabled>Мест нет</button>`
+            : `<button class="btn btn-ghost" data-buy="${esc(p.id)}">С баланса</button>
+               <button class="btn" data-card="${esc(p.id)}">Картой</button>`}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+OrbAuth.onReady(async () => {
+  updateBar(OrbAuth.current());
+  const fresh = await OrbAuth.refresh();
+  if (fresh) updateBar(fresh);
+  await loadProducts();
+});
+
+// после входа в другой вкладке — сразу обновляем баланс и каталог
+document.addEventListener('orb:changed', async () => {
+  updateBar(OrbAuth.current());
+  await loadProducts();
+});
+
+function openLogin() {
+  // вход открывается в отдельной вкладке и перекидывает в профиль
+  window.open('login.html', '_blank', 'noopener');
+  show('Вход открыт в <b>новой вкладке</b> — войдите и вернитесь сюда: баланс и покупки подтянутся автоматически.', 'ok');
+}
+
+$('products').addEventListener('click', async e => {
+  const buy = e.target.closest('[data-buy]');
+  const card = e.target.closest('[data-card]');
+
+  if (card) {
+    if (!OrbAuth.current()) { openLogin(); return; }
+    location.href = 'payment.html?kind=order&product=' + card.dataset.card;
+    return;
+  }
+
+  if (buy) {
+    const user = OrbAuth.current();
+    if (!user) { openLogin(); return; }
+    buy.disabled = true;
+    const r = await OrbitaApi.buyBalance(buy.dataset.buy);
+    buy.disabled = false;
+    if (r.ok) {
+      show('✓ Билет <b>' + esc(r.ticket.name) + '</b> оформлен — место ' + esc(r.ticket.seat) +
+           ', номер ' + esc(r.ticket.id) + '. Баланс: <b>' + money(r.balance) + '</b>. ' +
+           '<a href="profile.html">Открыть кабинет</a>');
+      updateBar(r.user);
+      await loadProducts();
+    } else {
+      const errs = r.errors || ['Ошибка покупки'];
+      if (r.balance !== undefined && r.price !== undefined) {
+        show('Недостаточно средств: нужно ' + money(r.price) + ', на балансе ' + money(r.balance) +
+             '. <a href="payment.html?kind=topup&amount=' + (r.price - r.balance) + '">Пополнить баланс</a>', 'err');
+      } else {
+        show('<ul>' + errs.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>', 'err');
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
