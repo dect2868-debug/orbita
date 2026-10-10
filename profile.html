@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Личный кабинет · ORBITA</title>
+<meta name="description" content="Профиль космического путешественника: баланс, билеты, программа полёта и чек-лист подготовки.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<!-- ЗАГРУЗКА -->
+<div class="auth-wrap" id="boot">
+  <div class="auth-card gate">
+    <div class="big blink">◍</div>
+    <p class="auth-sub">Проверяем сессию…</p>
+  </div>
+</div>
+
+<!-- НЕТ ДОСТУПА -->
+<div class="auth-wrap" id="gate" hidden>
+  <div class="auth-card gate">
+    <div class="big">🛰</div>
+    <h1>Требуется вход</h1>
+    <p class="auth-sub">Профиль путешественника доступен только после регистрации.
+    Создайте аккаунт за минуту — и получите баланс 500 000 ₽ (демо-бонус).</p>
+    <div class="actions">
+      <a href="register.html" class="btn">Регистрация</a>
+      <a href="login.html" class="btn btn-ghost" target="_blank" rel="noopener">Войти · новая вкладка</a>
+    </div>
+  </div>
+</div>
+
+<!-- ПРОФИЛЬ -->
+<div class="section" id="profilePage" hidden>
+  <div class="section-head">
+    <span class="eyebrow">Личный кабинет</span>
+    <h1 id="welcome" style="font-size:clamp(1.6rem,3.4vw,2.4rem)">Профиль</h1>
+    <p>Единый контур данных: допуски, баланс, билеты и чек-лист подготовки.</p>
+  </div>
+
+  <div class="profile-grid">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="col">
+      <section class="panel">
+        <div class="p-head">
+          <div class="avatar-big" id="avatar">?</div>
+          <div class="p-head-text">
+            <span class="badge" id="progBadge">Программа</span>
+            <h2 id="pName" style="margin-top:10px">—</h2>
+            <div class="meta" id="pMeta">—</div>
+          </div>
+        </div>
+
+        <div class="data-list">
+          <div><span>E-mail</span><b id="dEmail">—</b></div>
+          <div><span>Дата рождения</span><b id="dBirth">—</b></div>
+          <div><span>Город</span><b id="dCity">—</b></div>
+          <div><span>Телефон</span><b id="dPhone">—</b></div>
+          <div><span>Документ</span><b id="dPassport">—</b></div>
+          <div><span>Дата регистрации</span><b id="dCreated">—</b></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2><span class="ic">✎</span> Редактировать профиль</h2>
+        <div class="alert" id="pAlert"></div>
+        <form id="editForm">
+          <div class="row-2">
+            <div class="field">
+              <label for="eCity">Город</label>
+              <input id="eCity" type="text">
+            </div>
+            <div class="field">
+              <label for="ePhone">Телефон</label>
+              <input id="ePhone" type="tel" placeholder="+7 900 000-00-00">
+            </div>
+          </div>
+          <div class="field">
+            <label for="ePassport">Документ (серия, номер)</label>
+            <input id="ePassport" type="text" placeholder="00 00 000000">
+          </div>
+          <div class="field">
+            <label for="eProgram">Программа полёта</label>
+            <select id="eProgram">
+              <option>Суборбитальный полёт · 15 минут</option>
+              <option>Орбитальный полёт · 1–3 дня</option>
+              <option>Полёт к станции · 7 дней</option>
+              <option>Лунная программа</option>
+            </select>
+          </div>
+          <button class="btn" type="submit">Сохранить изменения</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2><span class="ic">🎯</span> Прогресс подготовки</h2>
+
+        <div class="prep-head">
+          <div class="prep-ring-wrap">
+            <svg class="prep-ring" viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="ring-bg" cx="50" cy="50" r="42"></circle>
+              <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="42"></circle>
+            </svg>
+            <b id="ringPct">0%</b>
+          </div>
+          <div class="prep-info">
+            <span class="badge" id="levelBadge">L0</span>
+            <h3 id="levelTitle" style="margin:10px 0 4px">Допуск не получен</h3>
+            <p id="levelHint" style="font-size:.88rem">Начните с медицинского скрининга.</p>
+            <div class="prog" style="margin-top:12px"><i id="progBar"></i></div>
+            <div class="prog-label" id="progLabel">0 / 6 этапов · 0 %</div>
+          </div>
+        </div>
+
+        <div class="tasks" id="taskList" style="margin-top:16px">
+          <label class="task" data-id="t1"><input type="checkbox"><span>Медицинский скрининг · T-180 дней</span><em class="lock"></em></label>
+          <label class="task" data-id="t2"><input type="checkbox"><span>Курс физики полёта · T-120 дней</span><em class="lock"></em></label>
+          <label class="task" data-id="t3"><input type="checkbox"><span>Кардиотренировки по плану M1</span><em class="lock"></em></label>
+          <label class="task" data-id="t4"><input type="checkbox"><span>Тренировка в центрифуге · T-30 дней</span><em class="lock"></em></label>
+          <label class="task" data-id="t5"><input type="checkbox"><span>Брифинг и финальный чек-лист · T-7 дней</span><em class="lock"></em></label>
+          <label class="task" data-id="t6"><input type="checkbox"><span>Отчёт о самочувствии · T+10 дней</span><em class="lock"></em></label>
+        </div>
+        <p class="hint" id="taskHint">Этапы идут по порядку: следующий открывается после завершения предыдущего.</p>
+      </section>
+
+      <section class="panel">
+        <h2><span class="ic">⚙</span> Действия</h2>
+        <div class="actions">
+          <button class="btn btn-ghost" id="logoutBtn" type="button">Выйти из профиля</button>
+          <button class="btn btn-danger" id="deleteBtn" type="button">Удалить аккаунт</button>
+        </div>
+        <div class="actions" style="margin-top:10px">
+          <a class="btn btn-ghost" href="support.html">💬 Поддержка отвечает нейросетью</a>
+        </div>
+        <p class="hint" id="modeHint">—</p>
+      </section>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="col">
+      <section class="panel panel-money">
+        <h2><span class="ic">💰</span> Баланс</h2>
+        <div class="balance" id="balance">— ₽</div>
+        <div class="balance-sub" id="balanceSub">Пополните баланс, чтобы покупать билеты в один клик.</div>
+        <div class="actions">
+          <a class="btn" id="topupBtn" href="payment.html?kind=topup&amount=500000">Пополнить</a>
+          <a class="btn btn-ghost" href="tickets.html">Купить билет</a>
+        </div>
+        <div class="quick-sums" id="quickSums">
+          <button type="button" data-sum="100000">100 000 ₽</button>
+          <button type="button" data-sum="500000">500 000 ₽</button>
+          <button type="button" data-sum="3500000">3 500 000 ₽</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2><span class="ic">🎫</span> Мои билеты</h2>
+        <div id="ticketList" class="ticket-list"><p>Загрузка…</p></div>
+        <div class="actions" style="margin-top:14px">
+          <a href="tickets.html" class="btn btn-ghost">Все рейсы →</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2><span class="ic">📊</span> Состояние</h2>
+        <div class="data-list">
+          <div><span>Допуск к подготовке</span><b id="stPermit">—</b></div>
+          <div><span>Уровень тревожности</span><b id="stAnx">норма</b></div>
+          <div><span>Прогноз укачивания (H₂)</span><b id="stMotion">низкий риск</b></div>
+          <div><span>Статус бронирования</span><b id="stBooking">черновик</b></div>
+        </div>
+        <p class="hint">Показатели рассчитываются демонстрационной моделью сервиса.</p>
+      </section>
+
+      <section class="panel">
+        <h2><span class="ic">🛰</span> Следующий шаг</h2>
+        <p id="nextStep" style="font-size:.93rem">—</p>
+        <div class="actions" style="margin-top:14px">
+          <a href="route.html" class="btn btn-ghost">Открыть маршрут</a>
+          <a href="modules.html" class="btn btn-ghost">Модули сервиса</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+<!-- ПОСАДОЧНЫЙ ТАЛОН -->
+<div class="bp-overlay" id="bpModal" hidden>
+  <div class="bp-card" role="dialog" aria-modal="true" aria-label="Посадочный талон">
+    <div class="bp-stub">
+      <div class="bp-logo">◍ ORBITA</div>
+      <div class="bp-type">BOARDING PASS</div>
+      <div class="bp-route"><span id="bpFrom">ЗЕМЛЯ</span><i>→</i><span id="bpTo">ОРБИТА</span></div>
+      <div class="bp-stub-note">Демо-документ. Сохраните талон до посадки.</div>
+    </div>
+    <div class="bp-main">
+      <div class="bp-grid">
+        <div class="bp-field"><span>ПАССАЖИР</span><b id="bpName">—</b></div>
+        <div class="bp-field"><span>РЕЙС</span><b id="bpFlight">—</b></div>
+        <div class="bp-field bp-big"><span>ДАТА</span><b id="bpDate">—</b></div>
+        <div class="bp-field bp-big"><span>МЕСТО</span><b id="bpSeat">—</b></div>
+        <div class="bp-field"><span>ВЫХОД НА ПОСАДКУ</span><b id="bpGate">—</b></div>
+        <div class="bp-field"><span>НАЧАЛО ПОСАДКИ</span><b id="bpTime">—</b></div>
+        <div class="bp-field"><span>ДЛИТЕЛЬНОСТЬ</span><b id="bpDur">—</b></div>
+        <div class="bp-field"><span>НОМЕР БИЛЕТА</span><b id="bpNum">—</b></div>
+      </div>
+      <div class="bp-barcode">
+        <canvas id="bpCode" width="560" height="64"></canvas>
+        <div class="bp-serial" id="bpSerial">—</div>
+      </div>
+      <div class="bp-actions">
+        <button type="button" class="btn btn-small" id="bpPrint">Печать / сохранить в PDF</button>
+        <button type="button" class="btn btn-ghost btn-small" id="bpClose">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
+
+let TASKS = [];
+
+function render(user) {
+  $('boot').hidden = true;
+  $('gate').hidden = true;
+  $('profilePage').hidden = false;
+
+  const initials = user.name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  $('welcome').textContent = 'Приветствуем, ' + user.name.split(' ')[0] + '!';
+  $('avatar').textContent = initials;
+  $('pName').textContent = user.name;
+  $('progBadge').textContent = user.program;
+  $('pMeta').textContent = 'Профиль путешественника · ' + user.email;
+  $('dEmail').textContent = user.email;
+  $('dBirth').textContent = user.birth || 'не указана';
+  $('dCity').textContent = user.city || 'не указан';
+  $('dPhone').textContent = user.phone || 'не указан';
+  $('dPassport').textContent = user.passport || 'не указан';
+  $('dCreated').textContent = new Date(user.created).toLocaleDateString('ru-RU');
+
+  $('eCity').value = user.city || '';
+  $('ePhone').value = user.phone || '';
+  $('ePassport').value = user.passport || '';
+  if ([...$('eProgram').options].some(o => o.value === user.program)) $('eProgram').value = user.program;
+
+  $('balance').textContent = money(user.balance);
+  $('modeHint').textContent = OrbAuth.mode() === 'server'
+    ? 'Режим: сервер проекта (API). Данные профиля и покупок общие для всех ваших устройств.'
+    : 'Режим: автономный (сервер недоступен), данные хранятся только в этом браузере.';
+
+  renderTasks(user);
+  loadTickets();
+}
+
+const RING_C = 2 * Math.PI * 42;   // длина окружности кольца готовности
+
+// уровни допуска по проценту пройденных этапов
+const LEVELS = [
+  {min: 100, code: 'L4', title: 'Полная готовность · допуск к полёту',
+   hint: 'Все этапы пройдены — осталось дождаться старта.',       permit: 'полный допуск'},
+  {min: 84,  code: 'L3', title: 'Готов к полёту · финальный контроль',
+   hint: 'Почти готовы: закройте последний этап чек-листа.',       permit: 'предварительный'},
+  {min: 50,  code: 'L2', title: 'Базовая подготовка пройдена',
+   hint: 'Осталось пройти тренировки и брифинг.',                 permit: 'получен'},
+  {min: 17,  code: 'L1', title: 'Допуск к подготовке получен',
+   hint: 'Медосмотр пройден — двигайтесь по плану подготовки.',    permit: 'получен'},
+  {min: 0,   code: 'L0', title: 'Допуск не получен',
+   hint: 'Начните с медицинского скрининга — без него этапы далее закрыты.', permit: 'не получен'}
+];
+
+function renderTasks(user) {
+  const tasks = [...document.querySelectorAll('.task')];
+  let done = 0;
+
+  tasks.forEach((t, i) => {
+    const on = !!(user.tasks && user.tasks[t.dataset.id]);
+    const locked = !on && done !== i;          // этапы открываются строго по порядку
+    t.classList.toggle('done', on);
+    t.classList.toggle('locked', locked);
+    t.querySelector('input').checked = on;
+    const lock = t.querySelector('.lock');
+    if (lock) lock.textContent = locked ? '🔒 по порядку' : (on ? '✓ пройдено' : '');
+    if (on) done++;
+  });
+
+  const pct = Math.round(done / tasks.length * 100);
+  const level = LEVELS.find(l => pct >= l.min);
+
+  // кольцо готовности
+  const ring = $('ringFg');
+  ring.style.strokeDasharray = RING_C.toFixed(1);
+  ring.style.strokeDashoffset = (RING_C * (1 - pct / 100)).toFixed(1);
+  ring.classList.toggle('full', pct >= 100);
+  $('ringPct').textContent = pct + '%';
+
+  // уровень и статусы
+  $('levelBadge').textContent = level.code;
+  $('levelTitle').textContent = level.title;
+  $('levelHint').textContent = level.hint;
+  $('progBar').style.width = pct + '%';
+  $('progLabel').textContent = `${done} / ${tasks.length} этапов · ${pct} %`;
+
+  $('stPermit').textContent = level.permit + ' · ' + level.code;
+  $('stAnx').textContent = pct >= 60 ? 'низкая' : 'норма';
+  $('stMotion').textContent = pct >= 80 ? 'минимальный риск' : 'низкий риск';
+  $('stBooking').textContent = pct >= 100 ? 'подтверждена' : (pct >= 40 ? 'сформирована' : 'черновик');
+
+  // следующий доступный этап
+  const pending = tasks.find(t => !user.tasks[t.dataset.id]);
+  $('nextStep').textContent = pending
+    ? 'Пройдите этап: ' + pending.querySelector('span').textContent
+    : 'Все этапы пройдены — готовьтесь к полёту!';
+
+  // подсказка под чек-листом
+  const lockedTask = tasks.find(t => t.classList.contains('locked'));
+  $('taskHint').textContent = pct >= 100
+    ? 'Чек-лист полностью пройден: допуск к полёту подтверждён.'
+    : (lockedTask
+        ? 'Сейчас доступен этап «' + (pending ? pending.querySelector('span').textContent : '') +
+          '». Следующий откроется автоматически после него.'
+        : 'Отмечайте этапы по мере прохождения — сервис обновит допуск и прогнозы.');
+}
+
+let ticketsCache = [];
+
+async function loadTickets() {
+  const box = $('ticketList');
+  const res = await OrbitaApi.tickets();
+  if (!res.ok) { box.innerHTML = '<p>' + esc((res.errors || [''])[0]) + '</p>'; return; }
+  ticketsCache = res.tickets || [];
+  if (res.balance !== undefined) $('balance').textContent = money(res.balance);
+  if (!res.tickets.length) {
+    box.innerHTML = '<p class="empty">Билетов пока нет. Выберите рейс в каталоге — оплата проходит через заглушку эквайринга.</p>';
+    return;
+  }
+  box.innerHTML = res.tickets.map(t => {
+    const cancelled = t.status === 'cancelled';
+    return `
+    <div class="ticket${cancelled ? ' ticket-cancelled' : ''}">
+      <div class="ticket-main">
+        <b>${esc(t.name)}</b>
+        <span>${esc(t.date)} · ${esc(t.duration)} · место ${esc(t.seat)} · № ${esc(t.id)}</span>
+        <span class="t-status ${cancelled ? 'is-cancel' : 'is-paid'}">${cancelled ? 'отменён' : 'оплачен'}</span>
+      </div>
+      <div class="ticket-side">
+        <b>${money(t.price)}</b>
+        <span class="badge">${t.paid_by === 'card' ? 'карта' : 'баланс'}</span>
+        ${cancelled
+          ? '<span class="refund-note">средства вернулись на баланс</span>'
+          : `<button type="button" class="btn btn-ghost btn-small" data-pass="${esc(t.id)}">Посадочный талон</button>
+             <button type="button" class="btn btn-danger btn-small" data-cancel="${esc(t.id)}">Отменить билет</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// отмена билета (возврат на баланс) и посадочный талон
+$('ticketList').addEventListener('click', async e => {
+  const pass = e.target.closest('[data-pass]');
+  if (pass) { openBoardingPass(pass.dataset.pass); return; }
+  const btn = e.target.closest('[data-cancel]');
+  if (!btn) return;
+  const id = btn.dataset.cancel;
+  if (!confirm('Отменить билет ' + id + '? Сумма покупки вернётся на баланс профиля.')) return;
+  btn.disabled = true;
+  const r = await OrbitaApi.cancel(id);
+  if (r.ok) {
+    await loadTickets();
+    const user = OrbAuth.current();
+    if (user) $('balance').textContent = money(user.balance);
+    document.dispatchEvent(new Event('orb:changed'));
+    alert('Билет отменён. На баланс возвращено ' + money(r.balance) + '.');
+  } else {
+    alert((r.errors || ['Не удалось отменить билет'])[0]);
+    btn.disabled = false;
+  }
+});
+
+function showGate() {
+  $('boot').hidden = true;
+  $('profilePage').hidden = true;
+  $('gate').hidden = false;
+}
+
+OrbAuth.onReady(async () => {
+  const user = OrbAuth.current();
+  if (!user) { showGate(); return; }
+  render(user);
+  // подтягиваем свежие данные с сервера
+  const fresh = await OrbAuth.refresh();
+  if (fresh) render(fresh);
+});
+
+// синхронизация с другими вкладками (вход, покупка, отмена)
+document.addEventListener('orb:changed', () => {
+  const user = OrbAuth.current();
+  if (user) render(user); else showGate();
+});
+
+// редактирование профиля
+$('editForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true;
+  const r = await OrbAuth.update({
+    city: $('eCity').value.trim(),
+    phone: $('ePhone').value.trim(),
+    passport: $('ePassport').value.trim(),
+    program: $('eProgram').value
+  });
+  btn.disabled = false;
+  if (r.ok) {
+    $('pAlert').className = 'alert ok';
+    $('pAlert').textContent = '✓ Профиль обновлён';
+    render(r.user);
+    document.dispatchEvent(new Event('orb:changed'));
+  } else {
+    $('pAlert').className = 'alert err';
+    $('pAlert').textContent = (r.errors || ['Ошибка'])[0];
+  }
+});
+
+// чек-лист (этапы открываются по порядку)
+document.querySelectorAll('.task').forEach(t => t.addEventListener('click', async e => {
+  e.preventDefault();
+  if (t.classList.contains('locked')) {
+    $('taskHint').textContent = '🔒 Этап «' + t.querySelector('span').textContent +
+      '» откроется после завершения предыдущего — так система отслеживает реальный допуск.';
+    return;
+  }
+  const r = await OrbAuth.toggleTask(t.dataset.id);
+  if (r.ok) renderTasks(r.user);
+}));
+
+// быстрое пополнение
+$('quickSums').addEventListener('click', e => {
+  const b = e.target.closest('button[data-sum]');
+  if (b) location.href = 'payment.html?kind=topup&amount=' + b.dataset.sum;
+});
+
+// выход / удаление
+$('logoutBtn').addEventListener('click', async () => {
+  await OrbAuth.logout();
+  location.href = 'index.html';
+});
+$('deleteBtn').addEventListener('click', async () => {
+  if (confirm('Удалить аккаунт, билеты и баланс?')) {
+    await OrbAuth.removeAccount();
+    location.href = 'index.html';
+  }
+});
+
+// ===== ПОСАДОЧНЫЙ ТАЛОН =====
+const CODE39 = {
+  '0': '101001101101', '1': '110100101011', '2': '101100101011', '3': '110110010101', '4': '101001101011',
+  '5': '110100110101', '6': '101100110101', '7': '101001011011', '8': '110100101101', '9': '101100101101',
+  'A': '110101001011', 'B': '101101001011', 'C': '110110100101', 'D': '101011001011', 'E': '110101100101',
+  'F': '101101100101', 'G': '101010011011', 'H': '110101001101', 'I': '101101001101', 'J': '101011001101',
+  'K': '110101010011', 'L': '101101010011', 'M': '110110101001', 'N': '101011010011', 'O': '110101101001',
+  'P': '101101101001', 'Q': '101010110011', 'R': '110101011001', 'S': '101101011001', 'T': '101011011001',
+  'U': '110010101011', 'V': '100110101011', 'W': '110011010101', 'X': '100101101011', 'Y': '110010110101',
+  'Z': '100110110101', '-': '100101011011', '.': '110010101101', ' ': '100110101101', '*': '100101101101'
+};
+
+function drawCode39(canvas, text) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const data = '*' + String(text || '').toUpperCase().replace(/[^0-9A-Z\-. ]/g, '') + '*';
+  const scale = 2, h = 64;
+  let modules = 0;
+  for (const ch of data) modules += (CODE39[ch] || '').length + 1;
+  canvas.width = Math.max(modules * scale, 240);
+  canvas.height = h;
+  ctx.fillStyle = '#e8edfb';
+  ctx.clearRect(0, 0, canvas.width, h);
+  let x = 0;
+  for (const ch of data) {
+    const pat = CODE39[ch] || '';
+    for (let i = 0; i < pat.length; i++) {
+      if (pat[i] === '1' && i % 2 === 0) ctx.fillRect(x, 0, scale, h);  // чётные позиции — штрихи
+      x += scale;
+    }
+    x += scale;  // межсимвольный интервал
+  }
+}
+
+function hashNum(s) {
+  let h = 0;
+  for (let i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function bpDestination(name) {
+  const n = String(name || '').toLowerCase();
+  if (n.includes('лун')) return 'ЛУНА';
+  if (n.includes('станц')) return 'ОРБИТАЛЬНАЯ СТАНЦИЯ';
+  if (n.includes('орбит')) return 'НИЗКАЯ ОРБИТА ЗЕМЛИ';
+  return 'ВЕРХНИЕ СЛОИ АТМОСФЕРЫ';
+}
+
+function openBoardingPass(id) {
+  const t = ticketsCache.find(x => x.id === id);
+  if (!t) { alert('Билет не найден. Обновите страницу.'); return; }
+  const user = OrbAuth.current() || {};
+  const h = hashNum(t.id);
+  const gates = ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'C1', 'C3'];
+  const mins = 16 * 60 + (h % 360);
+  const hh = String(Math.floor(mins / 60)).padStart(2, '0');
+  const mm = String(mins % 60).padStart(2, '0');
+
+  $('bpName').textContent = (user.name || 'ПАССАЖИР ORBITA').toUpperCase();
+  $('bpFlight').textContent = 'ORB-' + (h % 9000 + 100);
+  $('bpDate').textContent = t.date || '—';
+  $('bpSeat').textContent = t.seat || '—';
+  $('bpGate').textContent = gates[h % gates.length];
+  $('bpTime').textContent = hh + ':' + mm;
+  $('bpDur').textContent = t.duration || '—';
+  $('bpNum').textContent = t.id;
+  $('bpFrom').textContent = 'ЗЕМЛЯ';
+  $('bpTo').textContent = bpDestination(t.name);
+  $('bpSerial').textContent = String(t.id).replace(/[^A-Za-z0-9]/g, '');
+  drawCode39($('bpCode'), t.id + '-' + (h % 97));
+
+  $('bpModal').hidden = false;
+}
+
+$('bpClose').addEventListener('click', () => { $('bpModal').hidden = true; });
+$('bpModal').addEventListener('click', e => { if (e.target === $('bpModal')) $('bpModal').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('bpModal').hidden = true; });
+$('bpPrint').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>
