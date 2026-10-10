@@ -31,8 +31,10 @@ function renderHeader() {
     `<a href="${href}"${href === here ? ' class="active"' : ''}>${label}</a>`
   ).join('');
 
-  const admin = user && user.role === 'admin'
-    ? `<a href="admin.html" class="btn btn-small btn-ghost admin-btn" title="Панель администратора">⚙ Админ</a>`
+  const staff = user && (user.role === 'admin' || user.role === 'moderator');
+  const admin = staff
+    ? `<a href="admin.html" class="btn btn-small btn-ghost admin-btn" title="Панель ${user.role === 'admin' ? 'администратора' : 'модератора'}">${
+        user.role === 'admin' ? '⚙ Админ' : '🛠 Мод'}</a>`
     : '';
 
   const auth = user
