@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBITA · Сервис для космического путешественника</title>
+<meta name="description" content="Платформа сопровождения частного космического путешествия: подготовка, медицинский контроль, бортовой ассистент и возвращение. Федеральный конкурс научных проектов.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<!-- ГЕРОЙ -->
+<section class="hero" id="top">
+  <div class="hero-badge">Федеральный конкурс научных проектов · 2026</div>
+  <h1>Сервис для<br><span class="grad">космического путешественника</span></h1>
+  <p class="lead">
+    ORBITA — единая интеллектуальная платформа, которая ведёт частного путешественника
+    через всё путешествие: от первой консультации и подготовки до полёта,
+    пребывания в невесомости и безопасного возвращения на Землю.
+  </p>
+  <div class="hero-actions">
+    <a href="register.html" class="btn">Создать профиль путешественника</a>
+    <a href="about.html" class="btn btn-ghost">Как это работает →</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat"><b data-count="7">0</b><span>этапов сопровождения</span></div>
+    <div class="stat"><b data-count="4">0</b><span>модуля системы</span></div>
+    <div class="stat"><b data-count="92">0</b><span>% снижение рисков</span></div>
+    <div class="stat"><b data-count="18">0</b><span>месяцев разработки</span></div>
+  </div>
+
+  <div class="orbit-visual" aria-hidden="true">
+    <div class="planet"></div>
+    <div class="ring ring-1"><i class="sat"></i></div>
+    <div class="ring ring-2"><i class="sat sat-2"></i></div>
+  </div>
+</section>
+
+<!-- РАЗДЕЛЫ САЙТА -->
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">Разделы проекта</span>
+    <h2>Изучите исследование по страницам</h2>
+    <p>Каждый блок конкурсной работы вынесен на отдельную страницу — так удобнее читать жюри и экспертам.</p>
+  </div>
+
+  <div class="grid-3">
+    <a class="link-card" href="about.html">
+      <span class="num">01 / ПРОБЛЕМА</span>
+      <h3>О сервисе</h3>
+      <p>Почему подготовка космического туриста сейчас разрознена и как платформа собирает всё в один контур.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="science.html">
+      <span class="num">02 / НАУКА</span>
+      <h3>Научная основа</h3>
+      <p>Три гипотезы, методы исследования, модель прогноза укачивания и проверка результатов.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="modules.html">
+      <span class="num">03 / АРХИТЕКТУРА</span>
+      <h3>Модули</h3>
+      <p>Четыре модуля: подготовка, мониторинг состояния, бортовой ассистент и реабилитация.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="route.html">
+      <span class="num">04 / МАРШРУТ</span>
+      <h3>Путь путешественника</h3>
+      <p>Семь этапов от T-180 дней до возвращения: что происходит на каждом шаге.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="econ.html">
+      <span class="num">05 / ЭФФЕКТ</span>
+      <h3>Экономика и показатели</h3>
+      <p>Целевые KPI, этапы работы, практическая значимость и перспективы внедрения.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="team.html">
+      <span class="num">06 / КОМАНДА</span>
+      <h3>Команда и контакты</h3>
+      <p>Исполнители проекта, роли участников и связь с авторами исследования.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="tickets.html">
+      <span class="num">07 / БИЛЕТЫ</span>
+      <h3>Билеты и оплата</h3>
+      <p>Каталог рейсов, покупка с баланса профиля или картой через заглушку эквайринга.</p>
+      <span class="go">Перейти →</span>
+    </a>
+    <a class="link-card" href="calc.html">
+      <span class="num">08 / ПОДБОР</span>
+      <h3>Калькулятор полёта</h3>
+      <p>Подбор программы по бюджету, длительности и перегрузкам: рекомендация рейса, оценка пакета и обратный отсчёт.</p>
+      <span class="go">Перейти →</span>
+    </a>
+  </div>
+</section>
+
+<!-- КРАТКО О ПРОЕКТЕ -->
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Кратко о проекте</span>
+    <h2>Проблема → Решение → Новизна</h2>
+  </div>
+
+  <div class="grid-3">
+    <article class="card">
+      <div class="card-icon">⚠</div>
+      <h3>Проблема</h3>
+      <p>Подготовка туриста распределена между медцентрами, оператором, тренерами и наземной группой. Данные не синхронизированы, путешественник получает информацию из десятка источников.</p>
+    </article>
+    <article class="card">
+      <div class="card-icon">◎</div>
+      <h3>Решение</h3>
+      <p>Платформа ORBITA объединяет потоки данных в одном контуре: единый профиль, персональный план подготовки, прогноз рисков и бортовой ассистент на время полёта.</p>
+    </article>
+    <article class="card">
+      <div class="card-icon">✦</div>
+      <h3>Новизна</h3>
+      <p>Адаптивные модели прогноза укачивания и психоэмоционального состояния в микрогравитации — впервые в сервисе гражданского космического туризма.</p>
+    </article>
+  </div>
+
+  <div class="quote">
+    «К 2030 году ежегодный поток частных космических путешественников может превысить тысячу человек.
+    Инфраструктура сопровождения должна быть создана раньше, чем возникнет массовый спрос».
+    <cite>— обоснование проекта</cite>
+  </div>
+</section>
+
+<!-- КАК НАЧАТЬ -->
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">Старт</span>
+    <h2>Три шага до профиля путешественника</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <h3>Регистрация</h3>
+      <p>Создайте профиль: он станет единым хранилищем ваших допусков, показателей и плана подготовки.</p>
+    </div>
+    <div class="step">
+      <h3>Персональный план</h3>
+      <p>Система формирует календарь подготовки по выбранной программе полёта и отмечает пройденные этапы.</p>
+    </div>
+    <div class="step">
+      <h3>Полёт и возвращение</h3>
+      <p>На борту работает ассистент, после возвращения — программа реабилитации и сбор обратной связи.</p>
+    </div>
+  </div>
+
+  <div class="hero-actions" style="margin-top:36px">
+    <a href="calc.html" class="btn">Рассчитать полёт</a>
+    <a href="route.html" class="btn btn-ghost">Смотреть маршрут →</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
