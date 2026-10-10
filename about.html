@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>О сервисе · ORBITA</title>
+<meta name="description" content="Проблема, решение и новизна сервиса сопровождения космического путешественника.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / О сервисе</div>
+  <span class="eyebrow">01 · Постановка проблемы</span>
+  <h1>Космический туризм становится массовым —<br>а сопровождение остаётся разрозненным</h1>
+  <p class="lead">Разберём, почему обычный путешественник сегодня теряется в потоке информации,
+  и как единый цифровой контур превращает хаотичную подготовку в понятный маршрут.</p>
+</section>
+
+<section class="section">
+  <div class="grid-3">
+    <article class="card">
+      <div class="card-icon">⚠</div>
+      <h3>Проблема</h3>
+      <p>Подготовка распределена между медцентрами, оператором, тренерами и наземной группой. Данные не синхронизированы: результаты обследований, тренировки и инструкции живут в разных системах.</p>
+    </article>
+    <article class="card">
+      <div class="card-icon">◎</div>
+      <h3>Решение</h3>
+      <p>ORBITA объединяет все потоки данных в одном контуре: единый профиль путешественника, персональный план подготовки, прогноз рисков и бортовой ассистент.</p>
+    </article>
+    <article class="card">
+      <div class="card-icon">✦</div>
+      <h3>Новизна</h3>
+      <p>Адаптивные модели прогноза укачивания и психоэмоционального состояния в микрогравитации — впервые в сервисе гражданского космического туризма.</p>
+    </article>
+  </div>
+
+  <div class="quote">
+    «К 2030 году ежегодный поток частных космических путешественников может превысить тысячу человек.
+    Инфраструктура сопровождения должна быть создана раньше, чем возникнет массовый спрос».
+    <cite>— обоснование проекта</cite>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Аудитория</span>
+    <h2>Кому предназначен сервис</h2>
+  </div>
+  <div class="grid-3">
+    <article class="card">
+      <div class="card-icon">✈</div>
+      <h3>Суборбитальный полёт</h3>
+      <p>15 минут невесомости и линия Кармана. Короткая подготовка, высокие требования к переносимости перегрузок.</p>
+    </article>
+    <article class="card">
+      <div class="card-icon">🌍</div>
+      <h3>Орбитальный полёт</h3>
+      <p>1–3 дня на орбите: адаптация к невесомости, сон в микрогравитации, контроль вестибулярной функции.</p>
+    </article>
+    <article class="card">
+      <div class="card-icon">🛰</div>
+      <h3>Полёт к станции</h3>
+      <p>Долгая программа с научными задачами: расписание экспериментов, работа в экипаже, возвращение и реабилитация.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">Ценность</span>
+    <h2>Что получает путешественник</h2>
+  </div>
+  <ul class="ticks" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <li>Один профиль вместо десятка бумажных справок и анкет</li>
+    <li>Понятный календарь подготовки с датами и допусками</li>
+    <li>Персональные рекомендации по тренировкам и питанию</li>
+    <li>Предупреждение о рисках до полёта, а не после</li>
+    <li>Голосовой ассистент на борту и связь с наземной группой</li>
+    <li>Программа восстановления после возвращения</li>
+  </ul>
+
+  <div class="hero-actions" style="margin-top:40px">
+    <a href="science.html" class="btn">Научная основа →</a>
+    <a href="register.html" class="btn btn-ghost">Создать профиль</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
