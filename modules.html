@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Модули сервиса · ORBITA</title>
+<meta name="description" content="Архитектура сервиса: подготовка, мониторинг, бортовой ассистент и возвращение.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Модули</div>
+  <span class="eyebrow">03 · Архитектура</span>
+  <h1>Четыре модуля сервиса</h1>
+  <p class="lead">Каждый модуль отвечает за свой этап путешествия, но все они работают с единым
+  профилем путешественника — данными, которые создает регистрация в системе.</p>
+</section>
+
+<section class="section">
+  <div class="modules">
+    <article class="mod">
+      <span class="mod-n">M1</span>
+      <h3>Подготовка</h3>
+      <p>Онлайн-курс физики полёта, тренажёры вращения, персональный фитнес-план и медицинский чек-лист.</p>
+      <ul><li>Тесты на гипоксию</li><li>План питания</li><li>Календарь допусков</li></ul>
+    </article>
+    <article class="mod">
+      <span class="mod-n">M2</span>
+      <h3>Мониторинг</h3>
+      <p>Непрерывный сбор показателей: ЧСС, сатурация, сон, уровень тревожности — единый дашборд для врача и путешественника.</p>
+      <ul><li>Носимые датчики</li><li>Алерты отклонений</li><li>Электронная медкарта</li></ul>
+    </article>
+    <article class="mod">
+      <span class="mod-n">M3</span>
+      <h3>Бортовой ассистент</h3>
+      <p>Голосовой помощник в корабле: подсказки по процедуре, расписание, перевод инструкций и связь с Землёй.</p>
+      <ul><li>Офлайн-режим</li><li>Голос + текст</li><li>Протокол отчётов</li></ul>
+    </article>
+    <article class="mod">
+      <span class="mod-n">M4</span>
+      <h3>Возвращение</h3>
+      <p>Реабилитация после перегрузок: контроль вестибулярной функции, план восстановления и сбор обратной связи.</p>
+      <ul><li>Тест Ромберга</li><li>10 дней наблюдения</li><li>Отчёт для исследователей</li></ul>
+    </article>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Данные</span>
+    <h2>Как связаны модули и профиль</h2>
+  </div>
+
+  <div>
+    <ol class="timeline">
+      <li><b>Регистрация</b><span>Создание профиля: ФИО, программа полёта, медицинская анкета — формирует ядро данных</span></li>
+      <li><b>M1 → M2</b><span>План подготовки передаёт показатели в мониторинг, датчики обновляют профиль</span></li>
+      <li><b>M2 → M3</b><span>Предупреждения модели укачивания попадают бортовому ассистенту как приоритетные</span></li>
+      <li><b>M3 → M4</b><span>Протокол полёта становится основой программы реабилитации</span></li>
+      <li><b>M4 → M1</b><span>Обратная связь путешественника улучшает планы подготовки следующих групп</span></li>
+    </ol>
+  </div>
+
+  <div class="hero-actions" style="margin-top:36px">
+    <a href="route.html" class="btn">Маршрут путешественника →</a>
+    <a href="profile.html" class="btn btn-ghost">Личный кабинет</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
