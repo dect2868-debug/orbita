@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход · ORBITA</title>
+<meta name="description" content="Вход в личный кабинет космического путешественника ORBITA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <span class="eyebrow">Личный кабинет</span>
+    <h1>Вход в профиль</h1>
+    <p class="auth-sub">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+
+    <div class="alert" id="alert"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Пароль</label>
+        <input id="password" type="password" placeholder="Ваш пароль" autocomplete="current-password" required>
+      </div>
+      <button class="btn" type="submit">Войти</button>
+    </form>
+
+    <p class="hint" id="hint"></p>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+const form = document.getElementById('loginForm');
+const alertBox = document.getElementById('alert');
+
+OrbAuth.onReady(() => {
+  if (OrbAuth.current()) { location.href = 'profile.html'; return; }
+  document.getElementById('hint').textContent = OrbAuth.mode() === 'server'
+    ? 'Аккаунты хранятся на сервере проекта. Данные введённой карты никуда не отправляются — работает заглушка эквайринга.'
+    : 'Сервер недоступен: работает автономный режим хранения данных в браузере.';
+});
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = form.querySelector('button[type=submit]');
+  btn.disabled = true;
+  const res = await OrbAuth.login(
+    document.getElementById('email').value.trim(),
+    document.getElementById('password').value
+  );
+  btn.disabled = false;
+  if (!res.ok) {
+    alertBox.className = 'alert err';
+    alertBox.innerHTML = '<ul>' + (res.errors || ['Ошибка входа.']).map(x => '<li>' + x + '</li>').join('') + '</ul>';
+    return;
+  }
+  alertBox.className = 'alert ok';
+  alertBox.textContent = 'Добро пожаловать, ' + res.user.name + '! Открываем профиль…';
+  setTimeout(() => location.href = 'profile.html', 600);
+});
+</script>
+</body>
+</html>
