@@ -102,12 +102,18 @@ function scrollDown() {
   log.scrollTop = log.scrollHeight;
 }
 
+function srcLabel(s) {
+  if (s === 'faq') return 'база знаний';
+  if (s === 'deepseek') return 'DeepSeek';
+  return 'нейросеть';
+}
+
 function renderMsg(m) {
   const div = document.createElement('div');
   div.className = 'msg ' + (m.role === 'user' ? 'me' : 'bot');
   div.innerHTML = `<div class="bubble">${esc(m.text)}</div>` +
     (m.role === 'bot'
-      ? `<div class="msg-meta">${m.source === 'faq' ? 'база знаний' : 'нейросеть'}</div>` : '');
+      ? `<div class="msg-meta">${srcLabel(m.source)}</div>` : '');
   $('chatLog').appendChild(div);
 }
 
@@ -195,7 +201,7 @@ async function send(text) {
   setTimeout(() => {
     showTyping(false);
     pushMsg('bot', ans.reply, ans.source);
-    $('srcState').textContent = ans.source === 'faq' ? 'база знаний' : 'нейросеть';
+    $('srcState').textContent = srcLabel(ans.source);
     busy = false;
     $('sendBtn').disabled = false;
     $('chatInput').focus();
