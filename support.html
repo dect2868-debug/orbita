@@ -77,8 +77,21 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const LS_KEY = 'orbita_support_history';
+const CHAT_KEY = 'orbita_support_chat';
 let history = [];
 let busy = false;
+
+// метка диалога: одинаковая у этого браузера, чтобы ответы владельца
+// по почте находили именно этот чат
+function chatId() {
+  let id = '';
+  try { id = localStorage.getItem(CHAT_KEY) || ''; } catch {}
+  if (!id) {
+    id = 'C' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    try { localStorage.setItem(CHAT_KEY, id); } catch {}
+  }
+  return id;
+}
 
 // резервные ответы, если сервер/нейросеть недоступны (автономный режим)
 const LOCAL_FALLBACK = [
@@ -110,10 +123,12 @@ function srcLabel(s) {
 
 function renderMsg(m) {
   const div = document.createElement('div');
-  div.className = 'msg ' + (m.role === 'user' ? 'me' : 'bot');
+  const owner = m.role === 'owner';
+  div.className = 'msg ' + (m.role === 'user' ? 'me' : 'bot') + (owner ? ' owner' : '');
   div.innerHTML = `<div class="bubble">${esc(m.text)}</div>` +
     (m.role === 'bot'
-      ? `<div class="msg-meta">${srcLabel(m.source)}</div>` : '');
+      ? `<div class="msg-meta">${srcLabel(m.source)}</div>`
+      : owner ? '<div class="msg-meta">владелец поддержки · ответ по почте</div>' : '');
   $('chatLog').appendChild(div);
 }
 
@@ -174,12 +189,15 @@ async function ask(text) {
     const res = await fetch('/api/support', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, chat_id: chatId() }),
       signal: ctrl.signal
     });
     clearTimeout(timer);
     const data = await res.json();
-    if (data.ok && data.reply) return { reply: data.reply, source: data.source || 'neuro' };
+    if (data.ok && data.reply) {
+      return { reply: data.reply, source: data.source || 'neuro',
+               owner: data.owner_replies || [] };
+    }
     return localAnswer(text);
   } catch {
     return localAnswer(text);
@@ -200,6 +218,8 @@ async function send(text) {
   const wait = Math.max(0, 700 - (Date.now() - started));
   setTimeout(() => {
     showTyping(false);
+    // сначала ответы владельца (если он писал по почте), потом бот
+    (ans.owner || []).forEach(r => pushMsg('owner', r.text));
     pushMsg('bot', ans.reply, ans.source);
     $('srcState').textContent = srcLabel(ans.source);
     busy = false;
@@ -224,6 +244,21 @@ $('clearBtn').addEventListener('click', () => {
   renderAll();
   pushMsg('bot', 'Диалог очищен. Задайте новый вопрос — я отвечу с помощью нейросети.', 'neuro');
 });
+
+// ждущие ответы владельца (он мог ответить письмом на уведомление):
+// подтягиваем при открытии страницы и далее раз в минуту
+async function pullOwnerReplies() {
+  if (busy) return;
+  try {
+    const r = await fetch('/api/support_replies?chat=' + encodeURIComponent(chatId()));
+    const d = await r.json();
+    if (d.ok && Array.isArray(d.owner_replies)) {
+      d.owner_replies.forEach(x => { if (x.text) pushMsg('owner', x.text); });
+    }
+  } catch {}
+}
+pullOwnerReplies();
+setInterval(pullOwnerReplies, 60000);
 
 // старт
 loadHistory();
