@@ -42,7 +42,7 @@ function renderHeader() {
          <span class="coin">₽</span>${fmtMoney(user.balance)}
        </a>
        <a href="profile.html" class="btn btn-small btn-ghost profile-btn">
-         <span class="dot"></span>${escapeHtml(user.name.split(' ')[0])}
+         <span class="dot"></span><span class="p-name">${escapeHtml(user.name.split(' ')[0])}</span>
        </a>`
     : `<a href="login.html" class="btn btn-small btn-ghost" target="_blank" rel="noopener" title="Вход откроется в новой вкладке">Войти</a>
        <a href="register.html" class="btn btn-small">Регистрация</a>`;
