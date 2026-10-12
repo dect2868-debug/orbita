@@ -70,6 +70,14 @@ if (bars.length) {
 
 // --- Мобильное меню ---
 document.addEventListener('click', e => {
-  if (e.target.closest('.burger')) document.querySelector('.menu')?.classList.toggle('open');
-  if (e.target.closest('.menu a')) document.querySelector('.menu')?.classList.remove('open');
+  const menu = document.querySelector('.menu');
+  if (!menu) return;
+  if (e.target.closest('.burger')) { menu.classList.toggle('open'); return; }
+  if (e.target.closest('.menu a')) { menu.classList.remove('open'); return; }
+  // закрываем, если кликнули где-то вне шапки
+  if (menu.classList.contains('open') && !e.target.closest('.nav')) menu.classList.remove('open');
+});
+// закрытие по Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelector('.menu')?.classList.remove('open');
 });
