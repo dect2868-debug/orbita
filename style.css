@@ -640,6 +640,12 @@ p{color:var(--muted)}
   font-size:.63rem;color:var(--muted);margin-top:5px;
   letter-spacing:.1em;text-transform:uppercase;
 }
+/* ответ владельца, пришедший по почте на уведомление */
+.msg.owner .bubble{
+  background:rgba(26,48,36,.92);border:1px solid rgba(124,255,178,.45);
+  border-bottom-left-radius:4px;
+}
+.msg.owner .msg-meta{color:#7CFFB2}
 .typing{display:flex;gap:5px;align-items:center;min-width:52px}
 .typing i{
   width:7px;height:7px;border-radius:50%;background:var(--cyan);
