@@ -32,13 +32,13 @@ p{color:var(--muted)}
 /* НАВИГАЦИЯ */
 .nav{
   position:sticky;top:0;z-index:50;
-  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:nowrap;
   padding:14px 5vw;
   background:rgba(5,7,15,.72);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
 }
-.logo{display:flex;align-items:center;gap:10px;font-weight:800}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;flex-shrink:0}
 .logo-mark{font-size:1.5rem;color:var(--cyan)}
 .logo-text{display:flex;flex-direction:column;letter-spacing:.12em;font-size:.95rem}
 .logo-text small{font-size:.6rem;color:var(--muted);letter-spacing:.18em;font-weight:400}
@@ -258,12 +258,12 @@ p{color:var(--muted)}
   content:'';position:absolute;left:0;right:0;bottom:-6px;height:2px;
   background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:2px;
 }
-.auth-area{display:flex;gap:10px;align-items:center}
-.profile-btn{display:flex;align-items:center;gap:8px}
-.profile-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.auth-area{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;min-width:0;justify-content:flex-end}
+.profile-btn{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.profile-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);flex-shrink:0}
 .burger{
   display:none;background:none;border:1px solid var(--line);border-radius:10px;
-  color:var(--txt);font-size:1.1rem;padding:6px 12px;cursor:pointer;
+  color:var(--txt);font-size:1.1rem;padding:6px 12px;cursor:pointer;flex-shrink:0;
 }
 
 .page-hero{
@@ -412,8 +412,9 @@ p{color:var(--muted)}
   .menu{display:none}
   .menu.open{
     display:flex;position:absolute;left:0;right:0;top:100%;
-    flex-direction:column;gap:0;padding:8px 5vw 16px;
+    flex-direction:column;gap:0;padding:8px 5vw 16px;z-index:70;
     background:rgba(5,7,15,.97);border-bottom:1px solid var(--line);
+    max-height:calc(100vh - 64px);overflow-y:auto;
   }
   .menu.open a{padding:12px 0;border-bottom:1px solid var(--line)}
   .menu.open a.active::after{display:none}
@@ -422,7 +423,6 @@ p{color:var(--muted)}
   .row-2{grid-template-columns:1fr}
   .hyp{flex-direction:column;gap:14px}
   .foot-note{text-align:left}
-  .nav{position:relative}
 }
 
 /* ============ БАЛАНС В ШАПКЕ ============ */
@@ -556,19 +556,28 @@ p{color:var(--muted)}
   .menu{display:none}
   .menu.open{
     display:flex;position:absolute;left:0;right:0;top:100%;
-    flex-direction:column;gap:0;padding:8px 5vw 16px;z-index:60;
+    flex-direction:column;gap:0;padding:8px 5vw 16px;z-index:70;
     background:rgba(5,7,15,.97);border-bottom:1px solid var(--line);
+    max-height:calc(100vh - 64px);overflow-y:auto;
   }
   .menu.open a{padding:12px 0;border-bottom:1px solid var(--line)}
   .menu.open a.active::after{display:none}
   .burger{display:block}
-  .nav{position:relative}
 }
 @media(max-width:560px){
   .logo-text small{display:none}
   .auth-area{gap:6px}
   .auth-area .btn{padding:7px 10px;font-size:.73rem}
   .burger{padding:5px 10px;font-size:1rem}
+  /* на узких экранах имя в шапке не показываем — баланс и так ведёт в профиль */
+  .profile-btn .p-name{display:none}
+  .profile-btn{padding:7px 10px}
+  .chip-balance{font-size:.72rem;padding:7px 10px;gap:5px}
+}
+@media(max-width:400px){
+  .chip-balance .coin{display:none}
+  .chip-balance{padding:7px 9px}
+  .auth-area .btn{padding:7px 8px;font-size:.7rem}
 }
 #barAuth{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
