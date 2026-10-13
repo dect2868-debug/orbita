@@ -82,6 +82,7 @@ function renderFooter() {
       <a href="calc.html">Калькулятор</a>
       <a href="schedule.html">Расписание</a>
       <a href="tickets.html">Билеты</a>
+      <a href="install.html">📱 Установка на телефон</a>
       <a href="support.html">Поддержка</a>
       <a href="register.html">Регистрация</a>
     </div>
