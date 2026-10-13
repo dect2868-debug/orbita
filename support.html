@@ -187,14 +187,14 @@ async function notifyOwner(text) {
     if (keys.length > 20) keys.slice(0, keys.length - 20).forEach(k => delete seen[k]);
     localStorage.setItem('orbita_notify_seen', JSON.stringify(seen));
     const user = window.OrbAuth ? OrbAuth.current() : null;
+    const body = new URLSearchParams();
+    body.set('name', (user && user.name) || 'Гость сайта ORBITA');
+    body.set('_subject', 'ORBITA — сообщение в поддержку (сайт GitHub)');
+    body.set('message', text + '\n\nДиалог: ' + chatId());
     await fetch('https://formsubmit.co/ajax/dect2868@gmail.com', {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-      body: JSON.stringify({
-        name: (user && user.name) || 'Гость сайта ORBITA',
-        _subject: 'ORBITA — сообщение в поддержку (сайт GitHub)',
-        message: text + '\n\nДиалог: ' + chatId()
-      })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
     });
   } catch {}
 }
