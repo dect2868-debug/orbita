@@ -174,6 +174,31 @@ function localAnswer(text) {
   };
 }
 
+// Версия сайта на GitHub Pages (без сервера): письмо владельцу уходит
+// напрямую из браузера через бесплатный сервис FormSubmit. Работает,
+// только если сервер недоступен, — дублей с серверными письмами нет.
+async function notifyOwner(text) {
+  try {
+    const seen = JSON.parse(localStorage.getItem('orbita_notify_seen') || '{}');
+    const now = Date.now();
+    if (now - (seen[text] || 0) < 120000) return;      // не чаще раза в 2 минуты
+    seen[text] = now;
+    const keys = Object.keys(seen);
+    if (keys.length > 20) keys.slice(0, keys.length - 20).forEach(k => delete seen[k]);
+    localStorage.setItem('orbita_notify_seen', JSON.stringify(seen));
+    const user = window.OrbAuth ? OrbAuth.current() : null;
+    await fetch('https://formsubmit.co/ajax/dect2868@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+      body: JSON.stringify({
+        name: (user && user.name) || 'Гость сайта ORBITA',
+        _subject: 'ORBITA — сообщение в поддержку (сайт GitHub)',
+        message: text + '\n\nДиалог: ' + chatId()
+      })
+    });
+  } catch {}
+}
+
 async function ask(text) {
   const messages = history
     .filter(m => m.text)
@@ -200,6 +225,7 @@ async function ask(text) {
     }
     return localAnswer(text);
   } catch {
+    notifyOwner(text);   // GitHub-версия: сообщение уходит владельцу почтой
     return localAnswer(text);
   }
 }
