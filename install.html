@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Установка на телефон · ORBITA</title>
+<meta name="description" content="Как установить ORBITA на телефон как приложение: кнопка установки для Android, инструкция для iPhone, QR-код для перехода с компьютера.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#05070f">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Установка на телефон</div>
+  <span class="eyebrow">10 · Приложение</span>
+  <h1>Установка на телефон</h1>
+  <p class="lead">ORBITA — это ещё и приложение: ставится на телефон одним касанием,
+  открывается на весь экран со своей иконкой и работает даже без интернета.
+  Веб-версия по обычной ссылке тоже остаётся — выбирай, что удобнее.</p>
+</section>
+
+<section class="section">
+  <div class="inst-grid">
+
+    <div class="panel inst-card">
+      <h2><span class="ic">🤖</span> Android</h2>
+      <ol class="inst-steps">
+        <li>Открой сайт в браузере <b>Chrome</b> на телефоне</li>
+        <li>Нажми кнопку <b>«Установить»</b> ниже или меню браузера <b>⋮ → Установить приложение</b></li>
+        <li>Подтверди — на рабочем столе появится иконка <b>◍ ORBITA</b></li>
+      </ol>
+      <button type="button" class="btn inst-btn" id="installBtn">📥 Установить приложение</button>
+      <p class="inst-note" id="instNote"></p>
+    </div>
+
+    <div class="panel inst-card">
+      <h2><span class="ic">🍎</span> iPhone (Safari)</h2>
+      <ol class="inst-steps">
+        <li>Открой сайт в браузере <b>Safari</b></li>
+        <li>Нажми <b>«Поделиться»</b> (квадрат со стрелкой внизу)</li>
+        <li>Выбери <b>«На экран “Домой”» → «Добавить»</b></li>
+        <li>Иконка появится на телефоне, откроется на весь экран</li>
+      </ol>
+      <p class="inst-note">Важно: устанавливать нужно именно через Safari —
+      из других браузеров кнопка «Поделиться» не работает.</p>
+    </div>
+
+    <div class="panel inst-card inst-qr">
+      <h2><span class="ic">📷</span> С телефона по QR</h2>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fdect2868-debug.github.io%2Forbita%2F"
+           alt="QR-код на сайт ORBITA" width="220" height="220" loading="lazy">
+      <p class="inst-note">Наведи камеру телефона на код — откроется сайт,
+      после чего установи его, как описано слева.</p>
+    </div>
+
+  </div>
+
+  <div class="panel" style="margin-top:22px">
+    <h2><span class="ic">🆚</span> Приложение или веб-версия?</h2>
+    <div class="inst-compare">
+      <div>
+        <h3>Веб-версия</h3>
+        <p>Обычная ссылка в браузере. Всегда свежая версия, ничего устанавливать не нужно.
+        Подходит для проверки с любого устройства.</p>
+        <a class="btn btn-small btn-ghost" href="https://dect2868-debug.github.io/orbita/">Открыть сайт</a>
+      </div>
+      <div>
+        <h3>Приложение</h3>
+        <p>Иконка на телефоне, запуск на весь экран без адресной строки,
+        быстрый запуск и работа офлайн. Обновляется автоматически — переустанавливать не нужно.</p>
+        <span class="inst-tag">рекомендуется</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+(function () {
+  const btn = document.getElementById('installBtn');
+  const note = document.getElementById('instNote');
+  let deferred = null;
+
+  // уже открыт как приложение?
+  const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+                     window.navigator.standalone === true;
+  if (standalone) {
+    btn.disabled = true;
+    btn.textContent = '✅ Приложение уже установлено';
+    note.textContent = 'Запускайте его с иконки на рабочем столе.';
+    return;
+  }
+
+  // Chrome запрашивает разрешение на установку через это событие
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferred = e;
+  });
+
+  btn.addEventListener('click', async () => {
+    if (deferred) {
+      deferred.prompt();
+      const choice = await deferred.userChoice;
+      deferred = null;
+      if (choice.outcome === 'accepted') {
+        btn.textContent = '✅ Устанавливается…';
+        note.textContent = 'Готово! Иконка появится на рабочем столе.';
+      }
+    } else {
+      note.innerHTML = 'Установка от этой кнопки поддерживается в Chrome (Android и компьютер). ' +
+        'На iPhone следуйте инструкции справа, в других браузерах — ' +
+        'меню браузера → <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.';
+    }
+  });
+
+  // если событие так и не пришло (не Chrome) — заранее подскажем
+  setTimeout(() => {
+    if (!deferred && !note.textContent) {
+      note.textContent = 'Если кнопка не сработала: откройте меню браузера (⋮) и выберите ' +
+        '«Установить приложение» или «Добавить на главный экран».';
+    }
+  }, 1200);
+})();
+</script>
+</body>
+</html>
