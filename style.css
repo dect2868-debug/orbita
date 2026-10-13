@@ -905,3 +905,21 @@ input[type=range]::-moz-range-thumb{
 .music-btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(56,225,214,.1);animation:mbpulse 2.6s ease-in-out infinite}
 @keyframes mbpulse{0%,100%{box-shadow:0 0 0 0 rgba(56,225,214,.35)}50%{box-shadow:0 0 12px 2px rgba(56,225,214,.25)}}
 @media(max-width:760px){.music-btn .mb-label{display:none}}
+
+/* ============ УСТАНОВКА ПРИЛОЖЕНИЯ ============ */
+.inst-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;align-items:stretch}
+.inst-card{margin:0}
+.inst-card h2{margin-bottom:14px}
+.inst-steps{margin:0 0 18px 18px;font-size:.88rem;color:var(--muted);line-height:1.7}
+.inst-steps li{margin-bottom:8px}
+.inst-steps b{color:var(--txt)}
+.inst-btn{width:100%;padding:14px 18px;font-size:1rem;justify-content:center}
+.inst-btn:disabled{opacity:.7;cursor:default}
+.inst-note{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
+.inst-qr{text-align:center}
+.inst-qr img{border-radius:14px;background:#fff;padding:10px;max-width:100%;height:auto}
+.inst-compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:10px}
+.inst-compare h3{font-size:.95rem;color:var(--cyan);margin-bottom:8px}
+.inst-compare p{font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:12px}
+.inst-tag{display:inline-block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:#05070f;background:var(--cyan);padding:4px 12px;border-radius:999px;font-weight:700}
