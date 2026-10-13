@@ -879,3 +879,29 @@ input[type=range]::-moz-range-thumb{
   border-top:1px dashed var(--line);font-size:.88rem;color:var(--muted);
 }
 .timeline li.open .tl-more{display:block}
+
+/* ============ РАСПИСАНИЕ ТРЕНИРОВОК ============ */
+.sched-progress{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 8px;font-size:.85rem;color:var(--muted)}
+.sched-progress .bar{flex:1;min-width:140px;height:9px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.07);border:1px solid var(--line)}
+.sched-progress .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--cyan));transition:width .5s;border-radius:99px}
+.sched-progress b{font-family:'JetBrains Mono',monospace;color:var(--cyan);min-width:46px;text-align:right}
+.sched-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.74rem;color:var(--muted);margin:4px 0 20px}
+.sched-week{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.sched-day{background:rgba(10,15,31,.75);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.sched-day h3{font-size:.82rem;margin:0 0 8px;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase}
+.sched-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed rgba(120,160,255,.12);font-size:.85rem;cursor:pointer}
+.sched-item:first-of-type{border-top:0}
+.sched-item input{margin-top:3px;accent-color:var(--cyan);flex:none}
+.sched-item time{font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--accent);min-width:40px;flex:none;padding-top:2px}
+.sched-item .t-name{color:var(--txt);display:block;line-height:1.4}
+.sched-item .t-name em{color:var(--muted);font-style:normal}
+.sched-item small{display:block;color:var(--muted);font-size:.72rem;margin-top:2px;line-height:1.4}
+.sched-item.done .t-name{opacity:.45;text-decoration:line-through}
+.sched-item:hover .t-name{color:var(--cyan)}
+
+/* ============ МУЗЫКА В ШАПКЕ ============ */
+.music-btn{letter-spacing:.06em}
+.music-btn .mb-off{opacity:.55}
+.music-btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(56,225,214,.1);animation:mbpulse 2.6s ease-in-out infinite}
+@keyframes mbpulse{0%,100%{box-shadow:0 0 0 0 rgba(56,225,214,.35)}50%{box-shadow:0 0 12px 2px rgba(56,225,214,.25)}}
+@media(max-width:760px){.music-btn .mb-label{display:none}}
