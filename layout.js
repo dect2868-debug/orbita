@@ -227,6 +227,16 @@ if (window.OrbAudio && OrbAudio.isOn()) {
   document.addEventListener('keydown', kick, { once: true });
 }
 
+// ============ PWA: сайт ставится на телефон как приложение ============
+// sw.js кэширует страницы — приложение открывается и без интернета
+if ('serviceWorker' in navigator &&
+    (location.protocol === 'https:' || location.hostname === 'localhost' ||
+     location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 renderHeader();
 renderFooter();
 // перерисовываем шапку, когда профиль подгрузился с сервера
