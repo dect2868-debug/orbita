@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание тренировок · ORBITA</title>
+<meta name="description" content="Недельное расписание подготовки космического путешественника: силовые и центрифуга, тренажёры корабля и станции, лекции и отдых — с отметкой выполнения и прогрессом.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Расписание тренировок</div>
+  <span class="eyebrow">09 · Подготовка</span>
+  <h1>Расписание тренировок</h1>
+  <p class="lead">Неделя подготовки к полёту: силовые и перегрузки на центрифуге, отработка пилотирования
+  корабля и работы на станции, лекции и обязательный отдых. Отмечайте выполненные занятия —
+  прогресс сохраняется в вашем браузере.</p>
+</section>
+
+<section class="section">
+  <div class="panel">
+    <h2><span class="ic">🗓</span> Неделя подготовки</h2>
+
+    <div class="sched-progress">
+      <span>Прогресс недели</span>
+      <div class="bar"><i id="schedBar"></i></div>
+      <b id="schedPct">0 %</b>
+      <button type="button" class="btn btn-small btn-ghost" id="schedReset">Сбросить отметки</button>
+    </div>
+
+    <div class="sched-legend">
+      <span><b>09:00</b> — время начала</span>
+      <span>· Тренажёр и инструктор указаны под названием</span>
+      <span>· Пункты с «—» необязательные</span>
+    </div>
+
+    <div class="sched-week" id="schedWeek"></div>
+  </div>
+
+  <div class="panel" style="margin-top:22px">
+    <h2><span class="ic">💡</span> Как это работает</h2>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.7">
+      Программа составлена по принципам реальной подготовки космонавтов: физическая нагрузка
+      чередуется с теорией, а сложные тренажёры (центрифуга, пилотирование) идут после разминки.
+      Два дня в неделю — лёгкий режим: восстановление обязательно для организма.
+      Отметки хранятся только в вашем браузере, поэтому расписание работает даже без интернета.
+    </p>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+// --- Расписание тренировок: генерация недели + отметки в localStorage ---
+const SCHED_KEY = 'orbita_schedule_done';
+
+const SCHEDULE = [
+  { day: 'Понедельник', items: [
+    { t: '09:00', name: 'Силовая подготовка', who: 'тренер Артём Громов · зал А', opt: false },
+    { t: '12:00', name: 'Лекция: орбитальная механика', who: 'д-р Елена Ветрова', opt: false }
+  ]},
+  { day: 'Вторник', items: [
+    { t: '09:30', name: 'Центрифуга: перегрузки до 4 g', who: 'тренер Павел Соколов · куб 2', opt: false },
+    { t: '13:00', name: 'Тренажёр «Орбита»: пилотирование', who: 'тренер Артём Громов · симулятор', opt: false }
+  ]},
+  { day: 'Среда', items: [
+    { t: '08:30', name: 'Бег и дыхательные упражнения', who: 'тренер Мария Лебедева', opt: false },
+    { t: '14:00', name: 'Психологическая подготовка', who: 'психолог Ксения Рай', opt: false }
+  ]},
+  { day: 'Четверг', items: [
+    { t: '10:00', name: 'Водный комплекс (имитация невесомости)', who: 'тренер Мария Лебедева · бассейн', opt: false },
+    { t: '15:00', name: 'Лекция: медицина полёта', who: 'д-р Елена Ветрова', opt: false }
+  ]},
+  { day: 'Пятница', items: [
+    { t: '09:30', name: 'Центрифуга: перегрузки до 6 g', who: 'тренер Павел Соколов · куб 2', opt: false },
+    { t: '13:00', name: 'Тренажёр станции: манипулятор', who: 'тренер Артём Громов · симулятор', opt: false }
+  ]},
+  { day: 'Суббота', items: [
+    { t: '10:00', name: 'Растяжка и йога', who: 'тренер Мария Лебедева', opt: false },
+    { t: '12:30', name: 'Сборка снаряжения (практика)', who: 'тренер Павел Соколов · склад', opt: false },
+    { t: '16:00', name: 'Просмотр полётов', who: '—', opt: true }
+  ]},
+  { day: 'Воскресенье', items: [
+    { t: '—', name: 'Отдых и лёгкая прогулка', who: 'обязательное восстановление', opt: false },
+    { t: '—', name: 'Свободное плавание', who: '—', opt: true }
+  ]}
+];
+
+function loadDone() {
+  try { return JSON.parse(localStorage.getItem(SCHED_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveDone(d) {
+  try { localStorage.setItem(SCHED_KEY, JSON.stringify(d)); } catch {}
+}
+
+function renderSchedule() {
+  const done = loadDone();
+  const host = document.getElementById('schedWeek');
+  host.innerHTML = '';
+  let total = 0, ok = 0;
+  SCHEDULE.forEach((d, di) => {
+    const card = document.createElement('div');
+    card.className = 'sched-day';
+    card.innerHTML = `<h3>${d.day}</h3>`;
+    d.items.forEach((it, ii) => {
+      const id = di + ':' + ii;
+      total++;
+      if (done[id]) ok++;
+      const row = document.createElement('label');
+      row.className = 'sched-item' + (done[id] ? ' done' : '');
+      row.innerHTML = `
+        <input type="checkbox" data-id="${id}"${done[id] ? ' checked' : ''}>
+        <time>${it.t}</time>
+        <span>
+          <span class="t-name">${it.name}${it.opt ? ' <em>—</em>' : ''}</span>
+          <small>${it.who}</small>
+        </span>`;
+      card.appendChild(row);
+    });
+    host.appendChild(card);
+  });
+  const pct = total ? Math.round(ok / total * 100) : 0;
+  document.getElementById('schedBar').style.width = pct + '%';
+  document.getElementById('schedPct').textContent = pct + ' %';
+}
+
+document.getElementById('schedWeek').addEventListener('change', e => {
+  if (e.target.type !== 'checkbox') return;
+  const done = loadDone();
+  done[e.target.dataset.id] = e.target.checked;
+  saveDone(done);
+  renderSchedule();
+});
+
+document.getElementById('schedReset').addEventListener('click', () => {
+  try { localStorage.removeItem(SCHED_KEY); } catch {}
+  renderSchedule();
+});
+
+renderSchedule();
+</script>
+</body>
+</html>
