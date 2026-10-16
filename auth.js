@@ -168,14 +168,21 @@
 
     // стартовый режим — вызывается при загрузке
     async bootstrap() {
-      try {
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 3000);
-        const res = await fetch('/api/ping', { signal: ctrl.signal });
-        clearTimeout(timer);
-        mode = res.ok ? 'server' : 'local';
-      } catch {
+      // На GitHub Pages (и любом *.github.io) API-сервера нет — сразу
+      // работаем в локальном режиме, чтобы не дёргать несуществующий
+      // /api/ping и не получать 404 в консоли.
+      if (location.hostname.endsWith('.github.io')) {
         mode = 'local';
+      } else {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 3000);
+          const res = await fetch('/api/ping', { signal: ctrl.signal });
+          clearTimeout(timer);
+          mode = res.ok ? 'server' : 'local';
+        } catch {
+          mode = 'local';
+        }
       }
       await OrbAuth.refresh();
       ready = true;
