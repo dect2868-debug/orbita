@@ -11,6 +11,8 @@ const PRE = [
   'layout.js',
   'auth.js',
   'script.js',
+  'assets/hero-poster.jpg',
+  'assets/hero-loop.mp4',
   'icon-192.png',
   'icon-512.png'
 ];

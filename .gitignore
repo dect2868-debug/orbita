@@ -1,0 +1,15 @@
+# --- секреты и локальные настройки (не публиковать) ---
+email_notify.txt
+register_key.txt
+public_url.txt
+config.yml
+data/
+
+# --- логи ---
+*.log
+*.log.err
+
+# --- кэш и локальные инструменты ---
+__pycache__/
+cloudflared.exe
+*.pyc

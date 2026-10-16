@@ -105,6 +105,16 @@ tickets.html, econ.html, team.html, support.html, profile.html, login.html,
 register.html, payment.html, admin.html   — страницы сайта
 style.css                                  — стили проекта
 auth.js, layout.js, script.js              — авторизация, шапка/подвал, анимации
+assets/                                    — фоновые видео и постеры к ним:
+    hero-loop.mp4   — космос за заголовком главной (планета, орбита, метеоры);
+    launch.mp4      — «Разгон и выход на орбиту» (route.html);
+    orbit.mp4       — «Вид на Землю с борта» (tickets.html);
+    nebula.mp4      — «Глубокий космос» (about.html);
+    prep.mp4        — «Центрифуга» (schedule.html)
+make_hero_video.py                        — генератор видео главной страницы
+make_page_videos.py                       — генератор видео внутренних страниц
+    запуск: python make_hero_video.py / python make_page_videos.py
+    (нужны пакеты numpy, pillow, imageio-ffmpeg)
 server.py                                  — API-сервер (стандартная библиотека Python)
 ```
 

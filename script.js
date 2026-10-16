@@ -68,6 +68,37 @@ if (bars.length) {
   bars.forEach(b => bObs.observe(b));
 }
 
+// --- Фоновые видео (герой и страницы): уважаем настройку «меньше движения» ---
+const motionVideos = document.querySelectorAll('.hero-video, .clip-video');
+if (motionVideos.length) {
+  const mq = matchMedia('(prefers-reduced-motion: reduce)');
+  const syncMotion = () => {
+    motionVideos.forEach(v => {
+      if (mq.matches) v.pause();
+      else v.play().catch(() => {});
+    });
+  };
+  syncMotion();
+  if (mq.addEventListener) mq.addEventListener('change', syncMotion);
+  else if (mq.addListener) mq.addListener(syncMotion);
+  // некоторые браузеры запускают autoplay только после первого жеста
+  const kick = () => { if (!mq.matches) motionVideos.forEach(v => v.play().catch(() => {})); };
+  document.addEventListener('pointerdown', kick, { once: true });
+  document.addEventListener('keydown', kick, { once: true });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) syncMotion(); });
+
+  // если видео не загрузилось — прячем блок, чтобы не осталась пустая рамка
+  motionVideos.forEach(v => {
+    const fail = () => {
+      const box = v.closest('.video-card, .hero-media');
+      if (box) box.classList.add('video-failed');
+    };
+    v.addEventListener('error', fail);
+    const src = v.querySelector('source');
+    if (src) src.addEventListener('error', fail);
+  });
+}
+
 // --- Мобильное меню ---
 document.addEventListener('click', e => {
   const menu = document.querySelector('.menu');
