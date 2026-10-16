@@ -66,6 +66,18 @@ p{color:var(--muted)}
   padding:clamp(60px,10vw,120px) 5vw 80px;
   text-align:center;
 }
+/* фоновое видео для атмосферы: космос за заголовком */
+.hero-media{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.92}
+.hero-media::after{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(62% 56% at 50% 46%, rgba(5,7,15,.68), rgba(5,7,15,.12) 72%, rgba(5,7,15,.45)),
+    linear-gradient(180deg, rgba(5,7,15,.55), rgba(5,7,15,0) 24%, rgba(5,7,15,0) 54%,
+                    rgba(5,7,15,.72) 88%, rgba(5,7,15,.97));
+}
+.hero>*:not(.hero-media){position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){.hero-video{display:none}}
 .hero-badge{
   display:inline-block;
   padding:7px 18px;border:1px solid var(--line);border-radius:999px;
@@ -112,6 +124,28 @@ p{color:var(--muted)}
 .sat{position:absolute;left:-6px;top:50%;width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 16px var(--cyan)}
 .sat-2{background:var(--accent-2);box-shadow:0 0 16px var(--accent-2)}
 @keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
+
+/* ВИДЕО-БЛОКИ НА СТРАНИЦАХ (информация о полёте) */
+.video-card{
+  position:relative;overflow:hidden;
+  border:1px solid var(--line);border-radius:var(--radius);
+  background:#04060d;box-shadow:0 18px 50px rgba(0,0,0,.45);
+}
+.video-card video{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.video-card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,7,15,.18),rgba(5,7,15,0) 38%,rgba(5,7,15,.72));
+}
+.video-cap{
+  position:absolute;left:16px;bottom:14px;z-index:2;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(5,7,15,.62);
+  backdrop-filter:blur(8px);
+  font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--cyan);
+}
+.video-note{margin:14px 0 0;max-width:760px;font-size:.86rem;color:var(--muted);line-height:1.7}
+.video-failed{display:none}
 
 /* СЕКЦИИ */
 .section{padding:clamp(64px,9vw,110px) 5vw}
@@ -898,13 +932,6 @@ input[type=range]::-moz-range-thumb{
 .sched-item small{display:block;color:var(--muted);font-size:.72rem;margin-top:2px;line-height:1.4}
 .sched-item.done .t-name{opacity:.45;text-decoration:line-through}
 .sched-item:hover .t-name{color:var(--cyan)}
-
-/* ============ МУЗЫКА В ШАПКЕ ============ */
-.music-btn{letter-spacing:.06em}
-.music-btn .mb-off{opacity:.55}
-.music-btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(56,225,214,.1);animation:mbpulse 2.6s ease-in-out infinite}
-@keyframes mbpulse{0%,100%{box-shadow:0 0 0 0 rgba(56,225,214,.35)}50%{box-shadow:0 0 12px 2px rgba(56,225,214,.25)}}
-@media(max-width:760px){.music-btn .mb-label{display:none}}
 
 /* ============ УСТАНОВКА ПРИЛОЖЕНИЯ ============ */
 .inst-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;align-items:stretch}
