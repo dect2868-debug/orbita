@@ -29,7 +29,7 @@
 | **Общий (с сервером)** | локально или через туннель | общие данные на сервере: `python server.py` → http://127.0.0.1:8080 |
 
 Сайт сам определяет режим: при загрузке пробует `/api/ping` (на GitHub Pages —
-адрес из `api-config.js`) и, если сервера нет, переходит в автономный режим —
+адрес из `layout.js`) и, если сервера нет, переходит в автономный режим —
 все функции продолжают работать локально.
 
 ## Доступ из интернета и общий режим для GitHub Pages
@@ -37,12 +37,12 @@
 Один двойной клик запускает всё сразу:
 
 ```bat
-start_orbita.bat     # сервер + туннель cloudflared + адрес публикуется на Pages
+start_orbita.bat     # сервер + туннель + адрес публикуется на Pages
 ```
 
 Скрипт поднимает `server.py`, открывает туннель — сначала localtunnel
 (`https://*.loca.lt`), при его недоступности cloudflared — записывает адрес
-в `public_url.txt` и `api-config.js` и отправляет его в репозиторий —
+в `public_url.txt` и `layout.js` и отправляет его в репозиторий —
 GitHub Pages обновляется примерно за минуту. После этого сайт на
 [GitHub Pages](https://dect2868-debug.github.io/orbita/) работает с вашим
 сервером: общие аккаунты и билеты на всех устройствах, вход по логину,
@@ -63,8 +63,10 @@ GitHub Pages обновляется примерно за минуту. Посл
 python server.py            # порт 8080, данные в ./data/data.json
 ```
 
-Аккаунт администратора создаётся автоматически: `[REMOVED]` / `[REMOVED]`
-(меняется через переменные окружения `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
+Аккаунт администратора создаётся автоматически: `[REMOVED]`. Пароль
+случайный — он хранится только в локальном файле `admin_key.txt` (в репозиторий
+не попадает); задаётся/меняется через переменные окружения `ADMIN_EMAIL` /
+`ADMIN_PASSWORD` или этим файлом.
 
 ## Чат поддержки: YandexGPT
 
@@ -115,7 +117,9 @@ python server.py
 ```
 index.html, about.html, science.html, modules.html, route.html, calc.html,
 tickets.html, econ.html, team.html, support.html, profile.html, login.html,
-register.html, payment.html, admin.html   — страницы сайта
+register.html, payment.html                  — страницы сайта
+admin.html                                   — панель администратора (только
+                                              локально, на Pages не публикуется)
 style.css                                  — стили проекта
 auth.js, layout.js, script.js              — авторизация, шапка/подвал, анимации
 assets/                                    — фоновые видео и постеры к ним:
@@ -133,11 +137,15 @@ database/                                  — Excel-база аккаунтов
                                              Операции; пишется при каждом
                                              сохранении сервера, по HTTP не
                                              отдаётся, в git не попадает)
-api-config.js                              — адрес API сервера для GitHub Pages
+layout.js (последние строки)              — адрес API сервера для GitHub Pages
                                              (заполняет start_orbita.ps1)
-start_orbita.bat / start_orbita.ps1        — сервер + туннель cloudflared +
-                                             публикация адреса на Pages
-server.py                                  — API-сервер (стандартная библиотека Python)
+start_orbita.bat / start_orbita.ps1        — сервер + туннель + публикация
+                                             адреса на Pages
+server.py                                  — API-сервер (стандартная библиотека
+                                             Python; только локально, в git не
+                                             публикуется вместе с admin.html)
+admin_key.txt                              — пароль администратора (только
+                                             локально, в git не попадает)
 ```
 
 *Проект носит демонстрационный характер: платежи выполняются заглушкой эквайринга.*

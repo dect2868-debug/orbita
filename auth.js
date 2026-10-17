@@ -182,14 +182,15 @@
     async bootstrap() {
       const onPages = location.hostname.endsWith('.github.io');
       if (onPages) {
-        // На GitHub Pages адрес нашего API лежит в файле api-config.js —
-        // его обновляет скрипт start_orbita.ps1 при запуске туннеля.
+        // Адрес нашего API встроен в layout.js (его обновляет start_orbita.ps1).
+        // auth.js подключается раньше layout.js — дожидаемся появления переменной
+        // (событие orbita-config / load), но не дольше 4 секунд.
         await new Promise(resolve => {
-          const s = document.createElement('script');
-          s.src = 'api-config.js?t=' + Date.now();   // без кэша — адрес туннеля меняется
-          s.onload = resolve;
-          s.onerror = resolve;                       // файла нет — работаем автономно
-          document.head.appendChild(s);
+          if (window.ORBITA_API !== undefined) return resolve();
+          const done = () => resolve();
+          window.addEventListener('orbita-config', done, { once: true });
+          window.addEventListener('load', done, { once: true });
+          setTimeout(done, 4000);
         });
         API = String(window.ORBITA_API || '').replace(/\/+$/, '');
       }

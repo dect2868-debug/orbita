@@ -33,8 +33,12 @@ function renderHeader() {
   ).join('');
 
   const staff = user && (user.role === 'admin' || user.role === 'moderator');
+  // панель администратора живёт только на локальном сервере (не публикуется);
+  // с GitHub Pages кнопка ведёт на localhost, если сервер запущен
+  const adminHref = location.hostname.endsWith('.github.io')
+    ? 'http://127.0.0.1:8080/admin.html' : 'admin.html';
   const admin = staff
-    ? `<a href="admin.html" class="btn btn-small btn-ghost admin-btn" title="Панель ${user.role === 'admin' ? 'администратора' : 'модератора'}">${
+    ? `<a href="${adminHref}" class="btn btn-small btn-ghost admin-btn" title="Панель ${user.role === 'admin' ? 'администратора' : 'модератора'}">${
         user.role === 'admin' ? '⚙ Админ' : '🛠 Мод'}</a>`
     : '';
 
@@ -117,3 +121,8 @@ if (window.OrbAuth) {
     }
   });
 }
+
+// ============ Адрес API сервера (его обновляет start_orbita.ps1) ============
+// Пустая строка = сайт работает автономно. На GitHub Pages — адрес туннеля.
+window.ORBITA_API = location.hostname.endsWith('.github.io') ? 'https://red-drinks-count.loca.lt' : '';
+window.dispatchEvent(new Event('orbita-config'));
