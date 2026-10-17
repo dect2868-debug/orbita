@@ -24,3 +24,13 @@ make_page_videos.py
 test_api.py
 yandex_key.txt
 admin_key.txt
+
+# --- локальные вспомогательные скрипты (не для репозитория) ---
+ORBITA.bat
+open_register.bat
+start_local.bat
+start_public.bat
+tunnel.ps1
+tunnel_localtunnel.ps1
+css/
+js/
