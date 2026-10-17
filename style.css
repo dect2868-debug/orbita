@@ -950,3 +950,40 @@ input[type=range]::-moz-range-thumb{
 .inst-compare p{font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:12px}
 .inst-tag{display:inline-block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
   color:#05070f;background:var(--cyan);padding:4px 12px;border-radius:999px;font-weight:700}
+
+
+/* ============ Конкурсная секция: фестиваль «Таланты для космоса» ============ */
+.contest-head{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;
+  background:linear-gradient(135deg,rgba(91,140,255,.14),rgba(139,92,246,.10));
+  border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;margin-bottom:34px
+}
+.contest-head div{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.contest-head div b{display:block;color:var(--txt);font-size:1.02rem;margin-top:4px;letter-spacing:normal;text-transform:none}
+.contest-head .ch-wide b{font-size:1.25rem;background:linear-gradient(135deg,var(--accent),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.contest-head a{color:var(--cyan)}
+
+.ctable{width:100%;border-collapse:collapse;font-size:.92rem;margin:6px 0}
+.ctable th,.ctable td{border:1px solid var(--line);padding:11px 14px;text-align:left;vertical-align:top}
+.ctable th{background:rgba(91,140,255,.12);color:var(--txt);font-weight:800;white-space:nowrap}
+.ctable td{color:var(--muted)}
+.ctable td:first-child,.ctable th:first-child{color:var(--txt);font-weight:600}
+.ctable .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ctable tr.total td{color:var(--cyan);font-weight:800;border-color:rgba(56,225,214,.35)}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl-wrap table{min-width:640px}
+
+.doc-btns{display:flex;flex-wrap:wrap;gap:16px;margin-top:6px}
+.doc-btn{display:flex;flex-direction:column;gap:4px;padding:18px 26px;border:1px solid var(--line);
+  border-radius:var(--radius);background:var(--panel);transition:.25s;min-width:260px;flex:1;max-width:420px}
+.doc-btn:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.doc-btn b{font-size:1.05rem;color:var(--txt)}
+.doc-btn span{font-size:.82rem;color:var(--muted)}
+
+.risk-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.risk-list .card h3{font-size:1.02rem;color:var(--cyan)}
+.risk-list .card p{font-size:.9rem}
+
+.mailto-big{display:inline-block;margin-top:10px;font-size:1.15rem;font-weight:800;color:var(--accent)}
+.mailto-big:hover{color:var(--cyan)}
