@@ -19,8 +19,7 @@ cloudflared.exe
 admin.html
 server.py
 api-config.js
-make_hero_video.py
-make_page_videos.py
+make_*.py
 test_api.py
 yandex_key.txt
 admin_key.txt
