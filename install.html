@@ -33,18 +33,18 @@
   <div class="inst-grid">
 
     <div class="panel inst-card">
-      <h2><span class="ic">🤖</span> Android</h2>
+      <h2>Android</h2>
       <ol class="inst-steps">
         <li>Открой сайт в браузере <b>Chrome</b> на телефоне</li>
         <li>Нажми кнопку <b>«Установить»</b> ниже или меню браузера <b>⋮ → Установить приложение</b></li>
         <li>Подтверди — на рабочем столе появится иконка <b>◍ ORBITA</b></li>
       </ol>
-      <button type="button" class="btn inst-btn" id="installBtn">📥 Установить приложение</button>
+      <button type="button" class="btn inst-btn" id="installBtn">Установить приложение</button>
       <p class="inst-note" id="instNote"></p>
     </div>
 
     <div class="panel inst-card">
-      <h2><span class="ic">🍎</span> iPhone (Safari)</h2>
+      <h2>iPhone (Safari)</h2>
       <ol class="inst-steps">
         <li>Открой сайт в браузере <b>Safari</b></li>
         <li>Нажми <b>«Поделиться»</b> (квадрат со стрелкой внизу)</li>
@@ -56,7 +56,7 @@
     </div>
 
     <div class="panel inst-card inst-qr">
-      <h2><span class="ic">📷</span> С телефона по QR</h2>
+      <h2>С телефона по QR</h2>
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fdect2868-debug.github.io%2Forbita%2F"
            alt="QR-код на сайт ORBITA" width="220" height="220" loading="lazy">
       <p class="inst-note">Наведи камеру телефона на код — откроется сайт,
@@ -66,7 +66,7 @@
   </div>
 
   <div class="panel" style="margin-top:22px">
-    <h2><span class="ic">🆚</span> Приложение или веб-версия?</h2>
+    <h2>Приложение или веб-версия?</h2>
     <div class="inst-compare">
       <div>
         <h3>Веб-версия</h3>
@@ -99,7 +99,7 @@
                      window.navigator.standalone === true;
   if (standalone) {
     btn.disabled = true;
-    btn.textContent = '✅ Приложение уже установлено';
+    btn.textContent = 'Приложение уже установлено';
     note.textContent = 'Запускайте его с иконки на рабочем столе.';
     return;
   }
@@ -116,7 +116,7 @@
       const choice = await deferred.userChoice;
       deferred = null;
       if (choice.outcome === 'accepted') {
-        btn.textContent = '✅ Устанавливается…';
+        btn.textContent = 'Устанавливается…';
         note.textContent = 'Готово! Иконка появится на рабочем столе.';
       }
     } else {
