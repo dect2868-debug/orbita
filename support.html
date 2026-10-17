@@ -217,7 +217,7 @@ async function ask(text) {
     const headers = { 'Content-Type': 'application/json' };
     const tok = localStorage.getItem('orbita_token');
     if (tok) headers['Authorization'] = 'Bearer ' + tok;   // чтобы нейросеть знала, кто задаёт вопрос
-    const res = await fetch('/api/support', {
+    const res = await fetch(String(window.ORBITA_API || '') + '/api/support', {
       method: 'POST',
       headers,
       body: JSON.stringify({ messages, chat_id: chatId() }),
@@ -282,7 +282,7 @@ $('clearBtn').addEventListener('click', () => {
 async function pullOwnerReplies() {
   if (busy) return;
   try {
-    const r = await fetch('/api/support_replies?chat=' + encodeURIComponent(chatId()));
+    const r = await fetch(String(window.ORBITA_API || '') + '/api/support_replies?chat=' + encodeURIComponent(chatId()));
     const d = await r.json();
     if (d.ok && Array.isArray(d.owner_replies)) {
       d.owner_replies.forEach(x => { if (x.text) pushMsg('owner', x.text); });

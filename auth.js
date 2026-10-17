@@ -14,6 +14,7 @@
   const raw = k => { try { return localStorage.getItem(k); } catch { return null; } };
 
   let mode = 'local';
+  let API = '';            // адрес сервера API (пусто = свой сайт, локальный режим)
   let ready = false;
   const queue = [];
 
@@ -27,7 +28,7 @@
     if (token) opts.headers['Authorization'] = 'Bearer ' + token;
     if (body) opts.body = JSON.stringify(body);
     try {
-      const res = await fetch(path, opts);
+      const res = await fetch(API + path, opts);
       return await res.json();
     } catch {
       return { ok: false, errors: ['Сервер недоступен. Проверьте соединение.'] };
@@ -176,22 +177,35 @@
 
     // стартовый режим — вызывается при загрузке
     async bootstrap() {
-      // На GitHub Pages (и любом *.github.io) API-сервера нет — сразу
-      // работаем в локальном режиме, чтобы не дёргать несуществующий
-      // /api/ping и не получать 404 в консоли.
-      if (location.hostname.endsWith('.github.io')) {
-        mode = 'local';
+      const onPages = location.hostname.endsWith('.github.io');
+      if (onPages) {
+        // На GitHub Pages адрес нашего API лежит в файле api-config.js —
+        // его обновляет скрипт start_orbita.ps1 при запуске туннеля.
+        await new Promise(resolve => {
+          const s = document.createElement('script');
+          s.src = 'api-config.js?t=' + Date.now();   // без кэша — адрес туннеля меняется
+          s.onload = resolve;
+          s.onerror = resolve;                       // файла нет — работаем автономно
+          document.head.appendChild(s);
+        });
+        API = String(window.ORBITA_API || '').replace(/\/+$/, '');
+      }
+
+      if (onPages && !API) {
+        mode = 'local';   // туннель не настроен/выключен — сразу автономно, без запросов
       } else {
         try {
           const ctrl = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 3000);
-          const res = await fetch('/api/ping', { signal: ctrl.signal });
+          const res = await fetch(API + '/api/ping', { signal: ctrl.signal });
           clearTimeout(timer);
           mode = res.ok ? 'server' : 'local';
         } catch {
           mode = 'local';
         }
+        if (mode === 'local') API = '';   // сервер недоступен — всё локально
       }
+      window.ORBITA_API = API;   // адрес для остальных скриптов (поддержка и т.п.)
       await OrbAuth.refresh();
       ready = true;
       queue.splice(0).forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
