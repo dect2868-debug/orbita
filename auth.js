@@ -200,7 +200,8 @@
       } else {
         try {
           const ctrl = new AbortController();
-          const timer = setTimeout(() => ctrl.abort(), 3000);
+          // 6 с: первый запрос через туннель бывает «холодным» (пробуждение)
+          const timer = setTimeout(() => ctrl.abort(), 6000);
           const res = await fetch(API + '/api/ping', {
             signal: ctrl.signal,
             headers: { 'bypass-tunnel-reminder': '1' }
