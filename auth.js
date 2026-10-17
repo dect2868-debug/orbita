@@ -198,19 +198,24 @@
       if (onPages && !API) {
         mode = 'local';   // туннель не настроен/выключен — сразу автономно, без запросов
       } else {
-        try {
-          const ctrl = new AbortController();
-          // 6 с: первый запрос через туннель бывает «холодным» (пробуждение)
-          const timer = setTimeout(() => ctrl.abort(), 6000);
-          const res = await fetch(API + '/api/ping', {
-            signal: ctrl.signal,
-            headers: { 'bypass-tunnel-reminder': '1' }
-          });
-          clearTimeout(timer);
-          mode = res.ok ? 'server' : 'local';
-        } catch {
-          mode = 'local';
+        // Пинг сервера: до двух попыток. Холодный старт туннеля бывает медленным,
+        // а мёртвый туннель отвечает ошибкой быстро — существенной задержки нет.
+        let alive = false;
+        for (let i = 0; i < 2 && !alive; i++) {
+          try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 8000);
+            const res = await fetch(API + '/api/ping', {
+              signal: ctrl.signal,
+              headers: { 'bypass-tunnel-reminder': '1' }
+            });
+            clearTimeout(timer);
+            alive = res.ok;
+          } catch {
+            await new Promise(r => setTimeout(r, 1200));
+          }
         }
+        mode = alive ? 'server' : 'local';
         if (mode === 'local') API = '';   // сервер недоступен — всё локально
       }
       window.ORBITA_API = API;   // адрес для остальных скриптов (поддержка и т.п.)
