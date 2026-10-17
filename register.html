@@ -35,6 +35,11 @@
         <input id="name" type="text" placeholder="Иванов Иван Иванович" autocomplete="name" required>
       </div>
 
+      <div class="field">
+        <label for="login">Логин</label>
+        <input id="login" type="text" placeholder="ivanov - латиница, 3-20 символов" autocomplete="username" required>
+      </div>
+
       <div class="row-2">
         <div class="field">
           <label for="email">E-mail</label>
@@ -106,6 +111,7 @@ form.addEventListener('submit', async e => {
 
   const data = {
     name: document.getElementById('name').value,
+    login: document.getElementById('login').value.trim().toLowerCase(),
     email: document.getElementById('email').value.trim(),
     password: document.getElementById('password').value,
     confirm: document.getElementById('confirm').value,

@@ -115,6 +115,11 @@ make_hero_video.py                        — генератор видео гл
 make_page_videos.py                       — генератор видео внутренних страниц
     запуск: python make_hero_video.py / python make_page_videos.py
     (нужны пакеты numpy, pillow, imageio-ffmpeg)
+database/                                  — Excel-база аккаунтов accounts.xlsx
+                                             (листы: Сводка, Аккаунты, Билеты,
+                                             Операции; пишется при каждом
+                                             сохранении сервера, по HTTP не
+                                             отдаётся, в git не попадает)
 server.py                                  — API-сервер (стандартная библиотека Python)
 ```
 

@@ -37,7 +37,9 @@
   // ---------- локальный режим (без сервера) ----------
   const localUsers = () => readJSON(K.users, []);
   const localSave = list => writeJSON(K.users, list);
-  const localFind = email => localUsers().find(u => u.email.toLowerCase() === String(email).toLowerCase());
+  const localFind = id => localUsers().find(u =>
+    u.email.toLowerCase() === String(id).toLowerCase() ||
+    String(u.login || '').toLowerCase() === String(id).toLowerCase());
 
   function localUserFrom(u) {
     const { pass, salt, ...rest } = u;
@@ -66,11 +68,16 @@
 
     async register(data) {
       const errs = [];
+      const login = String(data.login || '').trim().toLowerCase();
       if (!data.name || data.name.trim().length < 3) errs.push('Укажите ФИО (минимум 3 символа).');
+      if (!/^[a-z0-9][a-z0-9._-]{2,19}$/.test(login)) errs.push('Логин: 3-20 символов, латиница, цифры, точка, дефис или _ (например, ivanov).');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email || '')) errs.push('Некорректный e-mail.');
       if ((data.password || '').length < 6) errs.push('Пароль должен быть не короче 6 символов.');
       if (data.password !== data.confirm) errs.push('Пароли не совпадают.');
-      if (mode === 'local' && localFind(data.email)) errs.push('Пользователь с таким e-mail уже зарегистрирован.');
+      if (mode === 'local') {
+        if (localFind(data.email)) errs.push('Пользователь с таким e-mail уже зарегистрирован.');
+        if (localFind(login)) errs.push('Такой логин уже занят - придумайте другой.');
+      }
       if (errs.length) return { ok: false, errors: errs };
 
       if (mode === 'server') {
@@ -81,6 +88,7 @@
 
       const user = {
         name: data.name.trim(),
+        login: String(data.login || '').trim().toLowerCase(),
         email: data.email.trim(),
         password: data.password,
         program: data.program || 'Суборбитальный полёт',
@@ -107,7 +115,7 @@
         return r;
       }
       const u = localFind(email);
-      if (!u) return { ok: false, errors: ['Аккаунт с таким e-mail не найден.'] };
+      if (!u) return { ok: false, errors: ['Аккаунт с таким логином или e-mail не найден.'] };
       if (u.password !== password) return { ok: false, errors: ['Неверный пароль.'] };
       localStorage.setItem(K.session, u.email);
       writeJSON(K.me, localUserFrom(u));

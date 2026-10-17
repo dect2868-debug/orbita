@@ -4,6 +4,7 @@ register_key.txt
 public_url.txt
 config.yml
 data/
+database/
 
 # --- логи ---
 *.log

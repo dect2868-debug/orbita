@@ -64,6 +64,7 @@
         </div>
 
         <div class="data-list">
+          <div><span>Логин</span><b id="dLogin">—</b></div>
           <div><span>E-mail</span><b id="dEmail">—</b></div>
           <div><span>Дата рождения</span><b id="dBirth">—</b></div>
           <div><span>Город</span><b id="dCity">—</b></div>
@@ -251,6 +252,7 @@ function render(user) {
   $('pName').textContent = user.name;
   $('progBadge').textContent = user.program;
   $('pMeta').textContent = 'Профиль путешественника · ' + user.email;
+  $('dLogin').textContent = user.login || '—';
   $('dEmail').textContent = user.email;
   $('dBirth').textContent = user.birth || 'не указана';
   $('dCity').textContent = user.city || 'не указан';
