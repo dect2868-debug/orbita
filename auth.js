@@ -23,7 +23,10 @@
     const token = raw(K.token);
     const opts = {
       method,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'bypass-tunnel-reminder': '1'   // localtunnel: пропуск страницы-предупреждения
+      }
     };
     if (token) opts.headers['Authorization'] = 'Bearer ' + token;
     if (body) opts.body = JSON.stringify(body);
@@ -197,7 +200,10 @@
         try {
           const ctrl = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 3000);
-          const res = await fetch(API + '/api/ping', { signal: ctrl.signal });
+          const res = await fetch(API + '/api/ping', {
+            signal: ctrl.signal,
+            headers: { 'bypass-tunnel-reminder': '1' }
+          });
           clearTimeout(timer);
           mode = res.ok ? 'server' : 'local';
         } catch {

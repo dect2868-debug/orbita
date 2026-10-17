@@ -214,7 +214,7 @@ async function ask(text) {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 80000);   // нейросеть может отвечать до ~60 с с повторами
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': '1' };
     const tok = localStorage.getItem('orbita_token');
     if (tok) headers['Authorization'] = 'Bearer ' + tok;   // чтобы нейросеть знала, кто задаёт вопрос
     const res = await fetch(String(window.ORBITA_API || '') + '/api/support', {
@@ -282,7 +282,8 @@ $('clearBtn').addEventListener('click', () => {
 async function pullOwnerReplies() {
   if (busy) return;
   try {
-    const r = await fetch(String(window.ORBITA_API || '') + '/api/support_replies?chat=' + encodeURIComponent(chatId()));
+    const r = await fetch(String(window.ORBITA_API || '') + '/api/support_replies?chat=' + encodeURIComponent(chatId()),
+      { headers: { 'bypass-tunnel-reminder': '1' } });
     const d = await r.json();
     if (d.ok && Array.isArray(d.owner_replies)) {
       d.owner_replies.forEach(x => { if (x.text) pushMsg('owner', x.text); });
