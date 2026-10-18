@@ -253,6 +253,27 @@
   </div>
 </section>
 
+<!-- ЕЖЕДНЕВНЫЙ БОНУС -->
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Бонус дня</span>
+    <h2>Ежедневный звёздный бонус</h2>
+    <p>Заходите на сайт раз в сутки: бонус растёт со серией дней подряд — от 5 000 до 10 000 ₽. Сумма сразу попадает на баланс профиля. Пропустили день — серия начнётся заново.</p>
+  </div>
+
+  <div class="panel daily-card">
+    <div class="daily-info">
+      <div class="daily-amount" id="daily-amount">5 000 ₽</div>
+      <div class="daily-meta">
+        <span id="daily-state">Загрузка…</span>
+        <span class="daily-streak" id="daily-streak">Серия: —</span>
+      </div>
+    </div>
+    <button class="btn" id="daily-btn" type="button" disabled>Получить бонус</button>
+  </div>
+  <p class="hint">Бонус доступен зарегистрированным путешественникам. Максимум серии — 10 000 ₽ в сутки.</p>
+</section>
+
 <div id="site-footer"></div>
 <script src="auth.js"></script>
 <script src="layout.js"></script>
@@ -368,6 +389,83 @@
   }).catch(function () {
     $('qf-res').innerHTML = '<p>Каталог недоступен. <a href="calc.html">Открыть калькулятор</a></p>';
   });
+})();
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  if (!$('daily-btn') || !window.OrbitaApi || !window.OrbAuth) return;
+
+  var btn = $('daily-btn');
+  var busy = false;
+  var money = function (n) {
+    return new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
+  };
+  var nextAmount = function (streak) {
+    return Math.min(5000 + (parseInt(streak, 10) || 0) * 1000, 10000);
+  };
+  var todayStr = function () {
+    var d = new Date();
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  };
+
+  function paint(success) {
+    var me = OrbAuth.current();
+    if (!me) {
+      $('daily-amount').textContent = money(nextAmount(0));
+      $('daily-state').textContent = 'Войдите — и получайте бонус каждый день';
+      $('daily-streak').textContent = 'Серия: —';
+      btn.disabled = false;
+      btn.textContent = 'Войти и получать';
+      return;
+    }
+    var rec = me.daily || {};
+    var streak = parseInt(rec.streak, 10) || 0;
+    var done = rec.last === todayStr();
+    $('daily-amount').textContent = money(nextAmount(streak));
+    $('daily-streak').textContent = streak > 0 ? 'Серия: ' + streak + ' дн.' : 'Серия не начата';
+    if (success) {
+      $('daily-state').textContent = success;
+    } else if (done) {
+      $('daily-state').textContent = 'Получено сегодня — возвращайтесь завтра';
+    } else {
+      $('daily-state').textContent = 'Бонус доступен — заберите';
+    }
+    btn.disabled = done || busy;
+    btn.textContent = done ? 'Получено сегодня' : 'Получить ' + money(nextAmount(streak));
+  }
+
+  btn.addEventListener('click', function () {
+    if (btn.disabled || busy) return;
+    if (!OrbAuth.current()) { location.href = 'login.html'; return; }
+    busy = true;
+    btn.disabled = true;
+    $('daily-state').textContent = 'Начисляем бонус…';
+    OrbitaApi.daily().then(function (r) {
+      busy = false;
+      if (r && r.ok) {
+        paint('+' + money(r.amount) + ' начислено · серия ' + r.streak + ' дн.');
+        if (typeof renderHeader === 'function') renderHeader();
+        document.dispatchEvent(new CustomEvent('orb:changed', { detail: { user: OrbAuth.current() } }));
+      } else if (r && r.already) {
+        paint('Получено сегодня — возвращайтесь завтра');
+        btn.disabled = true;
+        $('daily-streak').textContent = r.streak > 0 ? 'Серия: ' + r.streak + ' дн.' : 'Серия не начата';
+      } else {
+        paint();
+        $('daily-state').textContent = (r && r.errors && r.errors[0]) || 'Не удалось получить бонус.';
+      }
+    }).catch(function () {
+      busy = false;
+      paint();
+      $('daily-state').textContent = 'Сервис временно недоступен — попробуйте позже.';
+    });
+  });
+
+  OrbAuth.onReady(paint);
+  document.addEventListener('orb:ready', paint);
+  paint();
 })();
 </script>
 </body>

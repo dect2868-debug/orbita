@@ -1019,3 +1019,9 @@ input[type=range]::-moz-range-thumb{
   .news-meta{flex-direction:row;align-items:center}
 }
 .qf-price{display:block;margin-top:14px;font-size:1.45rem;font-weight:800;color:var(--cyan)}
+.daily-card{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.daily-amount{font-size:2.1rem;font-weight:800;color:var(--cyan);font-family:'JetBrains Mono',monospace;line-height:1.2}
+.daily-meta{display:flex;gap:16px;flex-wrap:wrap;align-items:baseline;margin-top:8px;font-size:.92rem;color:var(--muted)}
+.daily-streak{color:var(--txt);font-weight:600}
+.daily-card .btn{white-space:nowrap}
+.daily-card .btn:disabled{opacity:.6;cursor:default}

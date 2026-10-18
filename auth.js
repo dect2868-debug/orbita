@@ -406,6 +406,34 @@
       return { ok: false, errors: ['Неизвестный тип платежа.'] };
     },
 
+    // ---------- ежедневный бонус ----------
+    // Раз в сутки: сумма растёт со серией дней подряд (5 000 + 1 000 за каждый
+    // день серии, максимум 10 000). Сервер сам считает дату и серию.
+    async daily() {
+      const me = OrbAuth.current();
+      if (!me) return { ok: false, errors: ['Войдите в профиль, чтобы получить бонус.'] };
+      if (mode === 'server') {
+        const r = await call('/api/daily', 'POST', {});
+        if (r.ok) await OrbAuth.refresh();   // подтягиваем обновлённый баланс
+        return r;
+      }
+      const p = n => String(n).padStart(2, '0');
+      const dstr = d => d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+      const now = new Date();
+      const rec = me.daily || {};
+      const streak = parseInt(rec.streak, 10) || 0;
+      if (rec.last === dstr(now))
+        return { ok: false, already: true, streak, balance: me.balance || 0,
+                 errors: ['Бонус за сегодня уже получен — возвращайтесь завтра.'] };
+      const yesterday = dstr(new Date(now.getTime() - 86400000));
+      const newStreak = rec.last === yesterday ? streak + 1 : 1;
+      const amount = Math.min(5000 + (newStreak - 1) * 1000, 10000);
+      const r = await OrbAuth.update({ balance: (me.balance || 0) + amount,
+                                       daily: { last: dstr(now), streak: newStreak } });
+      if (!r.ok) return r;
+      return { ok: true, amount, streak: newStreak, balance: r.user.balance };
+    },
+
     // ---------- администрирование (панель работает и без сервера) ----------
     // роли: 'user' | 'moderator' | 'admin'.
     // Модератор: статистика, пользователи, билеты, балансы, возвраты.
