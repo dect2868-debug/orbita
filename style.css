@@ -42,8 +42,8 @@ p{color:var(--muted)}
 .logo-mark{font-size:1.5rem;color:var(--cyan)}
 .logo-text{display:flex;flex-direction:column;letter-spacing:.12em;font-size:.95rem}
 .logo-text small{font-size:.6rem;color:var(--muted);letter-spacing:.18em;font-weight:400}
-.menu{display:flex;gap:26px;font-size:.92rem}
-.menu a{color:var(--muted);transition:.2s}
+.menu{display:flex;gap:26px;font-size:.92rem;flex-wrap:wrap;row-gap:6px}
+.menu a{color:var(--muted);transition:.2s;white-space:nowrap}
 .menu a:hover{color:#fff}
 
 /* КНОПКИ */
