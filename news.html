@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://api.qrserver.com; media-src 'self' blob:; connect-src 'self' https: http://127.0.0.1:8080; manifest-src 'self'; object-src 'none'; base-uri 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Новости проекта · ORBITA</title>
+<meta name="description" content="Новости и хроника разработки проекта ORBITA — фестиваль «Таланты для космоса», номинация «Космический стартап».">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#05070f">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="crumbs"><a href="index.html">Главная</a> / Новости</div>
+  <span class="eyebrow">11 · Новости проекта</span>
+  <h1>Хроника разработки ORBITA</h1>
+  <p class="lead">Путь проекта от идеи до работающего сервиса: этапы, ключевые решения и результаты — по мере обновления.</p>
+</section>
+
+<section class="section section-dark">
+  <div class="news-filter" id="news-filter">
+    <button class="active" data-tag="all">Все</button>
+    <button data-tag="Продукт">Продукт</button>
+    <button data-tag="Разработка">Разработка</button>
+    <button data-tag="Конкурс">Конкурс</button>
+    <button data-tag="Команда">Команда</button>
+  </div>
+
+  <div class="news-list" id="news-list">
+    <article class="news-item" data-tag="Продукт">
+      <div class="news-meta"><time datetime="2026-10-18">18 октября 2026</time><span class="news-tag">Продукт</span></div>
+      <div class="news-body">
+        <h3>Общая база аккаунтов: сервис работает в едином режиме</h3>
+        <p>Регистрация и вход стали общими для всех устройств: аккаунт, профиль и билеты создаются на сервере и доступны с любого компьютера и телефона. Excel-база аккаунтов обновляется автоматически при каждом изменении данных. Для автономной работы сайт по-прежнему переключается в локальный режим без потери функций.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Продукт">
+      <div class="news-meta"><time datetime="2026-10-15">15 октября 2026</time><span class="news-tag">Продукт</span></div>
+      <div class="news-body">
+        <h3>Документы проекта: бизнес-план и презентация</h3>
+        <p>Опубликованы конкурсные материалы: бизнес-план (3 страницы) и презентация (9 слайдов) с экономической моделью 2027–2029, оценкой рынка TAM/SAM/SOM, анализом конкурентов и дорожной картой развития. Документы доступны для скачивания в разделе «Эффект и экономика».</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Разработка">
+      <div class="news-meta"><time datetime="2026-10-12">12 октября 2026</time><span class="news-tag">Разработка</span></div>
+      <div class="news-body">
+        <h3>Обновление системы аккаунтов</h3>
+        <p>Проведено обновление уровня надёжности сервиса: переработаны способы хранения и передачи данных аккаунтов, страницы сайта получили единые правила безопасности, ужесточены правила создания паролей. Цель обновления — чтобы личные данные путешественников были защищены на современном уровне.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Разработка">
+      <div class="news-meta"><time datetime="2026-10-08">8 октября 2026</time><span class="news-tag">Разработка</span></div>
+      <div class="news-body">
+        <h3>Поддержка отвечает нейросетью</h3>
+        <p>Чат поддержки подключён к YandexGPT: посетители получают ответы на вопросы о подготовке, билетах и маршруте полёта. Предусмотрены резервный канал связи и база знаний проекта, поэтому чат остаётся рабочим даже при недоступности основной модели. Сообщения продублированы письмом владельцу проекта.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Конкурс">
+      <div class="news-meta"><time datetime="2026-10-05">5 октября 2026</time><span class="news-tag">Конкурс</span></div>
+      <div class="news-body">
+        <h3>Номинация «Космический стартап»</h3>
+        <p>Проект оформлен для участия в фестивале «Таланты для космоса» в номинации «Космический стартап». Страница «Эффект и экономика» дополнена KPI, моделью выручки и затрат, сравнением с Space Adventures, Virgin Galactic и Axiom Space, дорожной картой 2027–2030 и списком рисков проекта.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Разработка">
+      <div class="news-meta"><time datetime="2026-10-01">1 октября 2026</time><span class="news-tag">Разработка</span></div>
+      <div class="news-body">
+        <h3>Установка на телефон и офлайн-режим</h3>
+        <p>ORBITA стала работать как приложение: страница установки на Android и iPhone, иконка на главном экране, сервис-воркер кэширует страницы. Если связь пропала, сайт открывается из кэша и продолжает работать — профиль, расписание и материалы доступны офлайн.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Продукт">
+      <div class="news-meta"><time datetime="2026-09-24">24 сентября 2026</time><span class="news-tag">Продукт</span></div>
+      <div class="news-body">
+        <h3>Интерактивные разделы: калькулятор, маршрут, расписание</h3>
+        <p>Запущены три связанных инструмента: калькулятор подбирает программу полёта по бюджету, длительности и допустимым перегрузкам; маршрут показывает 7 этапов сопровождения с живым отсчётом; расписание ведёт подготовку по чек-листу с кольцом готовности и уровнями допуска L0–L4.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Команда">
+      <div class="news-meta"><time datetime="2026-09-18">18 сентября 2026</time><span class="news-tag">Команда</span></div>
+      <div class="news-body">
+        <h3>Сформирована команда проекта</h3>
+        <p>Автор проекта — Кузин Андрей Александрович: исследование, разработка прототипа и научная часть. Научный руководитель — Гудкова Даяна Олеговна: методическое сопровождение работы. Раздел «Команда» дополнен ролями и контактами проекта.</p>
+      </div>
+    </article>
+
+    <article class="news-item" data-tag="Продукт">
+      <div class="news-meta"><time datetime="2026-09-10">10 сентября 2026</time><span class="news-tag">Продукт</span></div>
+      <div class="news-body">
+        <h3>Идея ORBITA: единая платформа путешественника</h3>
+        <p>Взята постановка задачи: частный космический полёт требует единого сопровождения — от первой консультации и подготовки до полёта, пребывания в невесомости и возвращения. Начата разработка прототипа: структура страниц, профиль путешественника и каталог рейсов.</p>
+      </div>
+    </article>
+  </div>
+
+  <p class="news-empty" id="news-empty" hidden>Публикаций в этой рубрике пока нет.</p>
+
+  <div class="card" style="margin-top:26px">
+    <h3>Следите за обновлениями</h3>
+    <p>Новости выходят по мере развития проекта. Вопросы, предложения и отзывы можно оставить в разделе поддержки — чат отвечает круглосуточно.</p>
+    <div class="hero-actions" style="margin-top:18px">
+      <a href="support.html" class="btn">Написать в поддержку</a>
+      <a href="econ.html" class="btn btn-ghost">Документы проекта</a>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="auth.js"></script>
+<script src="layout.js"></script>
+<script src="script.js"></script>
+<script>
+(function () {
+  var bar = document.getElementById('news-filter');
+  var list = document.getElementById('news-list');
+  if (!bar || !list) return;
+  var items = Array.prototype.slice.call(list.querySelectorAll('.news-item'));
+  var empty = document.getElementById('news-empty');
+  bar.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    Array.prototype.forEach.call(bar.querySelectorAll('button'), function (x) {
+      x.classList.toggle('active', x === b);
+    });
+    var tag = b.getAttribute('data-tag');
+    var shown = 0;
+    items.forEach(function (it) {
+      var ok = tag === 'all' || it.getAttribute('data-tag') === tag;
+      it.hidden = !ok;
+      if (ok) shown++;
+    });
+    if (empty) empty.hidden = shown > 0;
+  });
+})();
+</script>
+</body>
+</html>

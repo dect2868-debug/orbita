@@ -987,3 +987,34 @@ input[type=range]::-moz-range-thumb{
 
 .mailto-big{display:inline-block;margin-top:10px;font-size:1.15rem;font-weight:800;color:var(--accent)}
 .mailto-big:hover{color:var(--cyan)}
+
+/* --- Новости проекта --- */
+.news-filter{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px}
+.news-filter button{
+  padding:9px 18px;border-radius:999px;cursor:pointer;font-family:inherit;
+  font-size:.85rem;background:rgba(5,7,15,.55);border:1px solid var(--line);
+  color:var(--muted);transition:.2s;
+}
+.news-filter button:hover{border-color:var(--accent);color:var(--txt)}
+.news-filter button.active{background:rgba(91,140,255,.16);border-color:var(--accent);color:#fff}
+.news-list{display:grid;gap:16px}
+.news-item{
+  display:grid;grid-template-columns:190px 1fr;gap:22px;
+  padding:22px 24px;border-radius:var(--radius);
+  background:linear-gradient(180deg,rgba(20,28,50,.9),rgba(10,15,31,.7));
+  border:1px solid var(--line);transition:.2s;
+}
+.news-item:hover{border-color:rgba(91,140,255,.5);transform:translateY(-2px)}
+.news-meta{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.news-meta time{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--cyan)}
+.news-tag{
+  font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 11px;border-radius:999px;border:1px solid var(--line);color:var(--muted);
+}
+.news-body h3{font-size:1.08rem;margin-bottom:8px}
+.news-body p{color:var(--muted);font-size:.94rem;line-height:1.65}
+.news-empty{color:var(--muted);text-align:center;padding:30px 0}
+@media (max-width:720px){
+  .news-item{grid-template-columns:1fr;gap:12px}
+  .news-meta{flex-direction:row;align-items:center}
+}

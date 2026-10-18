@@ -1,12 +1,13 @@
 // ORBITA — офлайн-режим (PWA): сайт открывается даже без интернета.
 // Стратегия «сеть в приоритете, кэш как запасной вариант» —
 // данные всегда свежие, а кэш спасает при пропаже связи.
-const CACHE = 'orbita-v6';
+const CACHE = 'orbita-v7';
 const PRE = [
   './',
   'index.html',
   'schedule.html',
   'support.html',
+  'news.html',
   'style.css',
   'layout.js',
   'auth.js',
