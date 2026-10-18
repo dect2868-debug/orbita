@@ -175,9 +175,200 @@
   </div>
 </section>
 
+<!-- НОВОСТИ ПРОЕКТА -->
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Новости проекта</span>
+    <h2>Последние обновления</h2>
+    <p>Хроника разработки: путь проекта от идеи до работающего сервиса.</p>
+  </div>
+
+  <div class="grid-3">
+    <a class="link-card" href="news.html">
+      <span class="num">18 ОКТЯБРЯ 2026</span>
+      <h3>Общая база аккаунтов</h3>
+      <p>Регистрация и вход стали общими для всех устройств: аккаунт, профиль и билеты доступны с любого компьютера и телефона.</p>
+      <span class="go">Читать →</span>
+    </a>
+    <a class="link-card" href="news.html">
+      <span class="num">15 ОКТЯБРЯ 2026</span>
+      <h3>Документы проекта</h3>
+      <p>Опубликованы бизнес-план и презентация: экономическая модель 2027–2029, рынок TAM/SAM/SOM и дорожная карта развития.</p>
+      <span class="go">Читать →</span>
+    </a>
+    <a class="link-card" href="news.html">
+      <span class="num">12 ОКТЯБРЯ 2026</span>
+      <h3>Обновление системы аккаунтов</h3>
+      <p>Повышен уровень надёжности хранения и передачи данных, страницы получили единые правила, ужесточены правила паролей.</p>
+      <span class="go">Читать →</span>
+    </a>
+  </div>
+
+  <div class="hero-actions" style="margin-top:30px">
+    <a href="news.html" class="btn btn-ghost">Все новости проекта →</a>
+  </div>
+</section>
+
+<!-- БЫСТРЫЙ ПОДБОР -->
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">Калькулятор</span>
+    <h2>Быстрый подбор полёта</h2>
+    <p>Задайте бюджет, длительность и переносимость перегрузок — покажем подходящий рейс. Полный расчёт с пакетом услуг — в калькуляторе.</p>
+  </div>
+
+  <div class="calc-grid">
+    <div class="panel">
+      <h2>Ваши параметры</h2>
+
+      <div class="field" style="margin-top:18px">
+        <label for="qf-budget">Бюджет · <b class="calc-out" id="qf-budget-out">—</b></label>
+        <input type="range" id="qf-budget" min="0" max="100" value="42" step="1">
+      </div>
+
+      <div class="field">
+        <label>Длительность полёта</label>
+        <div class="quick-sums" id="qf-dur">
+          <button type="button" data-i="0">15 минут</button>
+          <button type="button" data-i="1" class="on">3 дня</button>
+          <button type="button" data-i="2">7 дней</button>
+          <button type="button" data-i="3">12 дней</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Переносимость перегрузок</label>
+        <div class="quick-sums" id="qf-g">
+          <button type="button" data-g="3">до 3 g</button>
+          <button type="button" data-g="4" class="on">до 4 g</button>
+          <button type="button" data-g="6">до 6 g</button>
+        </div>
+      </div>
+
+      <p class="hint">Быстрый подбор демонстрационный: показываем лучший рейс каталога.
+      Детальный расчёт пакета и обратный отсчёт — в полном калькуляторе.</p>
+    </div>
+
+    <div class="panel" id="qf-res"><p>Загрузка каталога рейсов…</p></div>
+  </div>
+</section>
+
 <div id="site-footer"></div>
 <script src="auth.js"></script>
 <script src="layout.js"></script>
 <script src="script.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  if (!$('qf-res') || !window.OrbitaApi) return;
+
+  var money = function (n) {
+    return new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)) + ' ₽';
+  };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  };
+
+  var B_MIN = 400000, B_MAX = 130000000;
+  var sliderToBudget = function (v) {
+    return Math.round(B_MIN * Math.pow(B_MAX / B_MIN, v / 100) / 10000) * 10000;
+  };
+  var DUR_MIN = [15, 3 * 1440, 7 * 1440, 12 * 1440];
+  var DUR_LABEL = ['15 минут', '3 дня', '7 дней', '12 дней'];
+  var parseDur = function (s) {
+    var n = parseInt(s, 10) || 0;
+    return String(s || '').toLowerCase().indexOf('дн') >= 0 ? n * 1440 : n;
+  };
+
+  var products = [];
+
+  function state() {
+    var d = document.querySelector('#qf-dur .on');
+    var g = document.querySelector('#qf-g .on');
+    return {
+      budget: sliderToBudget(+$('qf-budget').value),
+      durIdx: d ? +d.getAttribute('data-i') : 1,
+      tol: g ? +g.getAttribute('data-g') : 4
+    };
+  }
+
+  function score(p, st) {
+    var g = parseFloat(p.max_g) || 3;
+    var durMin = parseDur(p.duration);
+    var want = DUR_MIN[st.durIdx];
+    var durFit = 1 - Math.min(1, Math.abs(durMin - want) / Math.max(durMin, want));
+    var s = durFit * 55 + (g <= st.tol + 0.01 ? 25 : 0) + (p.price <= st.budget ? 20 : 0);
+    if (p.seats <= 0) s -= 40;
+    return { p: p, score: Math.max(0, Math.round(s)),
+             gOk: g <= st.tol + 0.01, affordable: p.price <= st.budget };
+  }
+
+  function render() {
+    var st = state();
+    $('qf-budget-out').textContent = money(st.budget);
+    if (!products.length) {
+      $('qf-res').innerHTML = '<p>Каталог рейсов пока пуст — загрузите страницу позже.</p>';
+      return;
+    }
+    var best = products.map(function (p) { return score(p, st); })
+      .sort(function (a, b) { return b.score - a.score; })[0];
+    var p = best.p;
+
+    var budgetNote = best.affordable
+      ? '<span class="fit-ok">вписывается в бюджет</span>'
+      : '<span class="fit-warn">превышает бюджет на ' + money(p.price - st.budget) + '</span>';
+    var gNote = best.gOk
+      ? '<span class="fit-ok">перегрузки в лимите (' + st.tol + ' g)</span>'
+      : '<span class="fit-warn">перегрузки выше лимита (' + st.tol + ' g)</span>';
+
+    $('qf-res').innerHTML =
+      '<div class="calc-head">' +
+        '<div>' +
+          '<span class="badge">' + esc(p.id) + '</span>' +
+          '<h3 style="margin-top:12px">' + esc(p.name) + '</h3>' +
+        '</div>' +
+        '<div class="calc-score"><b>' + best.score + '</b><span>% подбор</span></div>' +
+      '</div>' +
+      '<span class="qf-price">' + money(p.price) + '</span>' +
+      '<ul class="product-specs">' +
+        '<li><span>Дата старта</span><b>' + esc(p.date) + '</b></li>' +
+        '<li><span>Длительность</span><b>' + esc(p.duration) + '</b></li>' +
+        '<li><span>Перегрузки</span><b>' + esc(p.max_g) + '</b></li>' +
+        '<li><span>Свободно мест</span><b>' + (p.seats > 0 ? p.seats : 'нет мест') + '</b></li>' +
+      '</ul>' +
+      '<div class="calc-notes">' + budgetNote + ' · ' + gNote +
+        ' · подобрано под «' + DUR_LABEL[st.durIdx] + '»</div>' +
+      '<div class="actions" style="margin-top:16px">' +
+        '<a class="btn" href="calc.html">Открыть полный калькулятор →</a>' +
+        '<a class="btn btn-ghost" href="tickets.html">Все рейсы</a>' +
+      '</div>';
+  }
+
+  $('qf-budget').addEventListener('input', render);
+  $('qf-dur').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-i]');
+    if (!b) return;
+    document.querySelectorAll('#qf-dur button').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    render();
+  });
+  $('qf-g').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-g]');
+    if (!b) return;
+    document.querySelectorAll('#qf-g button').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    render();
+  });
+
+  OrbitaApi.products().then(function (r) {
+    products = (r && r.products) || [];
+    render();
+  }).catch(function () {
+    $('qf-res').innerHTML = '<p>Каталог недоступен. <a href="calc.html">Открыть калькулятор</a></p>';
+  });
+})();
+</script>
 </body>
 </html>

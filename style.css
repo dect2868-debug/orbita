@@ -1018,3 +1018,4 @@ input[type=range]::-moz-range-thumb{
   .news-item{grid-template-columns:1fr;gap:12px}
   .news-meta{flex-direction:row;align-items:center}
 }
+.qf-price{display:block;margin-top:14px;font-size:1.45rem;font-weight:800;color:var(--cyan)}
