@@ -69,6 +69,19 @@
       Отметки хранятся только в вашем браузере, поэтому расписание работает даже без интернета.
     </p>
   </div>
+<!-- ГОЛОСОВАНИЕ -->
+<section class="section section-dark">
+  <div class="section-head">
+    <span class="eyebrow">Голосование путешественников</span>
+    <h2>Куда отправим следующую программу в 2027 году?</h2>
+    <p>Решаете вы: команда ORBITA добавляет направление с наибольшим числом голосов. Один аккаунт — один голос.</p>
+  </div>
+
+  <div class="panel poll">
+    <p class="poll-q" id="pollQ">Загрузка…</p>
+    <div class="poll-list" id="pollList"></div>
+    <p class="hint" id="pollNote">Голосование идёт открыто, результаты видны сразу.</p>
+  </div>
 </section>
 
 <div id="site-footer"></div>
@@ -164,6 +177,53 @@ document.getElementById('schedReset').addEventListener('click', () => {
 });
 
 renderSchedule();
+</script>
+<script>
+// --- Голосование «куда летим» ---
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  if (!$('pollList') || !window.OrbitaApi) return;
+  var locked = false;
+
+  function render(poll, my) {
+    $('pollQ').textContent = poll.question;
+    $('pollList').innerHTML = poll.options.map(function (o) {
+      return '<button type="button" class="poll-opt' + (my === o.id ? ' on' : '') +
+        '" data-id="' + o.id + '"' + (my ? ' disabled' : '') + '>' +
+        '<span class="poll-name">' + o.label + (my === o.id ? ' · ваш выбор' : '') + '</span>' +
+        '<span class="poll-bar"><i style="width:' + o.pct + '%"></i></span>' +
+        '<span class="poll-num">' + o.pct + ' % · ' + o.votes + '</span>' +
+        '</button>';
+    }).join('');
+    $('pollNote').textContent = my
+      ? 'Ваш голос учтён — изменить его нельзя. Всего голосов: ' + poll.total + '.'
+      : (poll.total
+          ? 'Всего голосов: ' + poll.total + '. Выберите направление.'
+          : 'Станьте первым голосующим.');
+  }
+
+  $('pollList').addEventListener('click', function (e) {
+    var b = e.target.closest('.poll-opt');
+    if (!b || locked) return;
+    locked = true;
+    $('pollNote').textContent = 'Отправляем голос…';
+    OrbitaApi.pollVote(b.dataset.id).then(function (r) {
+      locked = false;
+      if (r && (r.ok || r.already)) render(r.poll, r.my);
+      else $('pollNote').textContent = (r && r.errors && r.errors[0]) || 'Не удалось проголосовать.';
+    }).catch(function () {
+      locked = false;
+      $('pollNote').textContent = 'Сервис временно недоступен — попробуйте позже.';
+    });
+  });
+
+  OrbitaApi.poll().then(function (r) {
+    if (r && r.ok) render(r.poll, r.my);
+    else $('pollQ').textContent = (r && r.errors && r.errors[0]) || 'Голосование временно недоступно.';
+  }).catch(function () {
+    $('pollQ').textContent = 'Голосование временно недоступно.';
+  });
+})();
 </script>
 </body>
 </html>

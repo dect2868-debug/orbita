@@ -48,6 +48,17 @@
     <div class="stat"><b data-count="18">0</b><span>месяцев разработки</span></div>
   </div>
 
+  <div class="countdown" id="countdown" hidden>
+    <span class="cd-label">До ближайшего старта · <b id="cdName">—</b></span>
+    <div class="cd-grid">
+      <div><b id="cdD">--</b><i>дней</i></div>
+      <div><b id="cdH">--</b><i>часов</i></div>
+      <div><b id="cdM">--</b><i>минут</i></div>
+      <div><b id="cdS">--</b><i>секунд</i></div>
+    </div>
+    <a href="tickets.html" class="cd-link">Рейсы и билеты →</a>
+  </div>
+
   <div class="orbit-visual" aria-hidden="true">
     <div class="planet"></div>
     <div class="ring ring-1"><i class="sat"></i></div>
@@ -197,9 +208,9 @@
       <span class="go">Читать →</span>
     </a>
     <a class="link-card" href="news.html">
-      <span class="num">12 ОКТЯБРЯ 2026</span>
-      <h3>Обновление системы аккаунтов</h3>
-      <p>Повышен уровень надёжности хранения и передачи данных, страницы получили единые правила, ужесточены правила паролей.</p>
+      <span class="num">19 ОКТЯБРЯ 2026</span>
+      <h3>Новые функции: значки, отсчёт и голосование</h3>
+      <p>В профиле появились достижения за пройденный путь, на главной — живой обратный отсчёт до ближайшего старта, а расписание дополнено голосованием за программу 2027 года.</p>
       <span class="go">Читать →</span>
     </a>
   </div>
@@ -466,6 +477,47 @@
   OrbAuth.onReady(paint);
   document.addEventListener('orb:ready', paint);
   paint();
+})();
+</script>
+<script>
+// --- Обратный отсчёт до ближайшего старта ---
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  if (!$('countdown') || !window.OrbitaApi) return;
+  var MON = { 'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3, 'мая': 4, 'июня': 5,
+              'июля': 6, 'августа': 7, 'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11 };
+  function parseRu(s) {
+    var m = String(s || '').toLowerCase().match(/^(\d{1,2})\s+([а-яё]+)\s+(\d{4})$/);
+    if (!m || MON[m[2]] === undefined) return null;
+    return new Date(+m[3], MON[m[2]], +m[1], 12, 0, 0);   // старт — полдень дня старта
+  }
+  var target = null;
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  function tick() {
+    if (!target) return;
+    var s = Math.floor((target - new Date()) / 1000);
+    if (s <= 0) {
+      $('cdD').textContent = $('cdH').textContent = $('cdM').textContent = $('cdS').textContent = '00';
+      return;
+    }
+    $('cdD').textContent = pad(Math.floor(s / 86400));
+    $('cdH').textContent = pad(Math.floor(s / 3600) % 24);
+    $('cdM').textContent = pad(Math.floor(s / 60) % 60);
+    $('cdS').textContent = pad(s % 60);
+  }
+  OrbitaApi.products().then(function (r) {
+    var best = null;
+    ((r && r.products) || []).forEach(function (p) {
+      var d = parseRu(p.date);
+      if (d && d > new Date() && (!best || d < best.d)) best = { d: d, p: p };
+    });
+    if (!best) return;
+    target = best.d;
+    $('cdName').textContent = best.p.name;
+    $('countdown').hidden = false;
+    tick();
+    setInterval(tick, 1000);
+  }).catch(function () {});
 })();
 </script>
 </body>

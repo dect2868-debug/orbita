@@ -307,6 +307,33 @@
   };
 
   // ---------- продукты, билеты, платежи ----------
+  // ---------- достижения и голосование (локальные данные) ----------
+  const ACH_LIST = [
+    ['first_step', 'Первый шаг', 'Зарегистрирован в профиле ORBITA'],
+    ['first_flight', 'Первый полёт', 'Оплачен первый билет на рейс'],
+    ['two_flights', 'Сезон путешествий', 'Два и более оплаченных билета'],
+    ['balance_m', 'Космо-кошелёк', 'Баланс достиг 1 000 000 ₽'],
+    ['checklist', 'Готов к старту', 'Отмечены все этапы чек-листа подготовки'],
+    ['streak3', 'Три витка', 'Серия ежедневных бонусов — 3 дня и больше'],
+    ['streak7', 'Комета недели', 'Серия ежедневных бонусов — 7 дней и больше']
+  ];
+  const POLL_QUESTION = 'Куда отправить следующую программу ORBITA в 2027 году?';
+  const POLL_OPTIONS = [['moon', 'Облёт Луны'], ['station', 'Орбитальная станция'],
+                        ['mars', 'Миссия к Марсу'], ['stratos', 'Полёт в стратосферу']];
+  function localPoll() {
+    try {
+      const st = JSON.parse(localStorage.getItem('orbita_poll'));
+      if (st && st.votes && st.voters) return st;
+    } catch (e) { /* повреждённые данные — начинаем заново */ }
+    return { votes: {}, voters: {} };
+  }
+  function pollView(st) {
+    const total = Object.keys(st.votes).reduce((s, k) => s + (st.votes[k] || 0), 0);
+    return { question: POLL_QUESTION, total,
+      options: POLL_OPTIONS.map(([id, label]) => ({ id, label, votes: st.votes[id] || 0,
+        pct: total ? Math.round((st.votes[id] || 0) / total * 100) : 0 })) };
+  }
+
   const LOCAL_PRODUCTS = [
     { id: 'SUB-26', name: 'Полёт над линией Кармана', kind: 'Суборбитальный полёт', date: '15 июня 2026', duration: '15 минут', max_g: '3 g', price: 450000, seats: 6, desc: 'Парабола, 5 минут невесомости на высоте 103 км и вид на кривизну Земли.' },
     { id: 'LEO-26', name: 'Орбитальный полёт', kind: 'Орбитальный полёт', date: '12 сентября 2026', duration: '3 дня', max_g: '4 g', price: 3500000, seats: 4, desc: '16 витков вокруг Земли, сон в микрогравитации и программа наблюдений.' },
@@ -432,6 +459,53 @@
                                        daily: { last: dstr(now), streak: newStreak } });
       if (!r.ok) return r;
       return { ok: true, amount, streak: newStreak, balance: r.user.balance };
+    },
+
+    // ---------- достижения ----------
+    async achievements() {
+      const me = OrbAuth.current();
+      if (!me) return { ok: false, errors: ['Требуется вход.'] };
+      if (mode === 'server') return call('/api/achievements');
+      // автономный режим: те же правила по локальным данным
+      const paid = localTickets().filter(t => t.status === 'paid');
+      const tasks = me.tasks || {};
+      const streak = parseInt((me.daily || {}).streak, 10) || 0;
+      const state = {
+        first_step: true,
+        first_flight: paid.length >= 1,
+        two_flights: paid.length >= 2,
+        balance_m: (me.balance || 0) >= 1000000,
+        checklist: Object.keys(tasks).length > 0 && Object.keys(tasks).every(k => tasks[k]),
+        streak3: streak >= 3,
+        streak7: streak >= 7
+      };
+      const out = ACH_LIST.map(([id, name, desc]) => ({
+        id, name, desc, unlocked: !!state[id],
+        date: state[id] ? new Date().toISOString().slice(0, 10) : null
+      }));
+      return { ok: true, achievements: out, total: out.length,
+               unlocked: out.filter(a => a.unlocked).length };
+    },
+
+    // ---------- голосование ----------
+    async poll() {
+      if (mode === 'server') return call('/api/poll');
+      const st = localPoll();
+      const me = OrbAuth.current();
+      return { ok: true, poll: pollView(st), my: me ? (st.voters[me.email] || null) : null };
+    },
+    async pollVote(choice) {
+      if (mode === 'server') return call('/api/poll', 'POST', { choice });
+      const me = OrbAuth.current();
+      if (!me) return { ok: false, errors: ['Войдите в профиль, чтобы проголосовать.'] };
+      const st = localPoll();
+      if (st.voters[me.email])
+        return { ok: false, already: true, my: st.voters[me.email], poll: pollView(st),
+                 errors: ['Вы уже голосовали — изменить голос нельзя.'] };
+      st.votes[choice] = (st.votes[choice] || 0) + 1;
+      st.voters[me.email] = choice;
+      try { localStorage.setItem('orbita_poll', JSON.stringify(st)); } catch (e) { /* без хранилища */ }
+      return { ok: true, my: choice, poll: pollView(st) };
     },
 
     // ---------- администрирование (панель работает и без сервера) ----------

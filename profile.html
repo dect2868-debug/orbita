@@ -176,6 +176,12 @@
       </section>
 
       <section class="panel">
+        <h2>Достижения</h2>
+        <p class="ach-note" id="achNote">Загрузка…</p>
+        <div class="ach-grid" id="achGrid"></div>
+      </section>
+
+      <section class="panel">
         <h2><span class="ic">📊</span> Состояние</h2>
         <div class="data-list">
           <div><span>Допуск к подготовке</span><b id="stPermit">—</b></div>
@@ -273,6 +279,7 @@ function render(user) {
 
   renderTasks(user);
   loadTickets();
+  loadAch();
 }
 
 const RING_C = 2 * Math.PI * 42;   // длина окружности кольца готовности
@@ -375,6 +382,22 @@ async function loadTickets() {
       </div>
     </div>`;
   }).join('');
+}
+
+// значки достижения (сервер считает правила, клиент только рисует)
+async function loadAch() {
+  const box = $('achGrid');
+  if (!box) return;
+  const r = await OrbitaApi.achievements();
+  if (!r.ok) { box.innerHTML = '<p>' + esc((r.errors || [''])[0]) + '</p>'; return; }
+  $('achNote').textContent = 'Открыто ' + r.unlocked + ' из ' + r.total +
+    ' значков — новые открываются за реальные действия в профиле.';
+  box.innerHTML = r.achievements.map(a => `
+    <div class="ach${a.unlocked ? ' on' : ''}">
+      <b>${esc(a.name)}</b>
+      <span>${esc(a.desc)}</span>
+      <em>${a.unlocked ? 'получено ' + new Date(a.date).toLocaleDateString('ru-RU') : 'не открыто'}</em>
+    </div>`).join('');
 }
 
 // отмена билета (возврат на баланс) и посадочный талон
