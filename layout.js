@@ -36,7 +36,7 @@ function renderHeader() {
   // панель администратора живёт только на локальном сервере (не публикуется);
   // с GitHub Pages кнопка ведёт на localhost, если сервер запущен
   const adminHref = location.hostname.endsWith('.github.io')
-    ? 'http://127.0.0.1:8080/admin.html' : 'admin.html';
+    ? 'http://127.0.0.1:8081/admin.html' : 'admin.html';
   const admin = staff
     ? `<a href="${adminHref}" class="btn btn-small btn-ghost admin-btn" title="Панель ${user.role === 'admin' ? 'администратора' : 'модератора'}">${
         user.role === 'admin' ? '⚙ Админ' : '🛠 Мод'}</a>`
@@ -124,5 +124,5 @@ if (window.OrbAuth) {
 
 // ============ Адрес API сервера (его обновляет start_orbita.ps1) ============
 // Пустая строка = сайт работает автономно. На GitHub Pages — адрес туннеля.
-window.ORBITA_API = location.hostname.endsWith('.github.io') ? 'https://khaki-places-start.loca.lt' : '';
+window.ORBITA_API = location.hostname.endsWith('.github.io') ? 'https://vast-queens-sing.loca.lt' : '';
 window.dispatchEvent(new Event('orbita-config'));
