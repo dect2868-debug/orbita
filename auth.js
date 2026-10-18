@@ -57,6 +57,58 @@
     return u ? localUserFrom(u) : null;
   }
 
+  // ---------- E2E-шифрование пароля ----------
+  // Пароль шифруется в браузере открытым ключом сервера (RSA-OAEP), по сети
+  // (в том числе через туннель) он не проходит в открытом виде. Если ключа нет
+  // (старый сервер) — работает обычный путь с паролем в запросе.
+  let PUBKEY = undefined; // undefined — не пробовали, null — недоступен, CryptoKey — готов
+  async function loadPubkey() {
+    if (PUBKEY !== undefined) return PUBKEY;
+    try {
+      const res = await fetch(API + '/api/pubkey', { headers: { 'bypass-tunnel-reminder': '1' } });
+      const j = await res.json();
+      if (j.ok && j.key && window.crypto && crypto.subtle) {
+        const b64 = j.key.replace(/-----(BEGIN|END) PUBLIC KEY-----/g, '').replace(/\s+/g, '');
+        const der = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+        PUBKEY = await crypto.subtle.importKey('spki', der.buffer,
+          { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+      } else PUBKEY = null;
+    } catch { PUBKEY = null; }
+    return PUBKEY;
+  }
+  async function seal(pw) {
+    const key = await loadPubkey();
+    if (!key) return null;
+    try {
+      const enc = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key,
+        new TextEncoder().encode(String(pw)));
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(enc)));
+    } catch { return null; }
+  }
+
+  // ---------- proof-of-work: вызов против автоматических регистраций ----------
+  // Сервер выдаёт seed, браузер ищет nonce: sha256(seed:nonce) начинается с нулей.
+  // Для человека — доли секунды, для бота — заметная нагрузка на каждую попытку.
+  async function solvePow(ch) {
+    const seed = String((ch && ch.seed) || '');
+    const zeroes = '0'.repeat((ch && ch.zeroes) || 3);
+    if (!seed) return null;
+    const enc = new TextEncoder();
+    let n = 0;
+    while (n < 4000000) {
+      const batch = [];
+      for (let i = 0; i < 64; i++, n++) batch.push(n);
+      const hashes = await Promise.all(batch.map(i =>
+        crypto.subtle.digest('SHA-256', enc.encode(seed + ':' + i))));
+      for (let i = 0; i < hashes.length; i++) {
+        const hex = Array.from(new Uint8Array(hashes[i]))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+        if (hex.startsWith(zeroes)) return { pow_seed: seed, pow_nonce: batch[i] };
+      }
+    }
+    return null;
+  }
+
   // ---------- общий API ----------
   const OrbAuth = {
     mode: () => mode,
@@ -76,7 +128,10 @@
       if (!data.name || data.name.trim().length < 3) errs.push('Укажите ФИО (минимум 3 символа).');
       if (!/^[a-z0-9][a-z0-9._-]{2,19}$/.test(login)) errs.push('Логин: 3-20 символов, латиница, цифры, точка, дефис или _ (например, ivanov).');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email || '')) errs.push('Некорректный e-mail.');
-      if ((data.password || '').length < 6) errs.push('Пароль должен быть не короче 6 символов.');
+      const pw = String(data.password || '');
+      if (pw.length < 8) errs.push('Пароль: минимум 8 символов.');
+      else if (!/[A-Za-zА-Яа-яЁё]/.test(pw) || !/\d/.test(pw))
+        errs.push('Пароль должен содержать буквы и цифры.');
       if (data.password !== data.confirm) errs.push('Пароли не совпадают.');
       if (mode === 'local') {
         if (localFind(data.email)) errs.push('Пользователь с таким e-mail уже зарегистрирован.');
@@ -85,9 +140,32 @@
       if (errs.length) return { ok: false, errors: errs };
 
       if (mode === 'server') {
-        const r = await call('/api/register', 'POST', data);
-        if (r.ok) { localStorage.setItem(K.token, r.token); writeJSON(K.me, r.user); }
-        return r;
+        // пароль уходит зашифрованным (E2E) + решается вызов proof-of-work
+        const body = Object.assign({}, data);
+        delete body.password;
+        delete body.confirm;
+        const sealedPw = await seal(data.password);
+        const sealedConf = await seal(data.confirm);
+        if (sealedPw && sealedConf) {
+          body.password_enc = sealedPw;
+          body.confirm_enc = sealedConf;
+        } else {
+          body.password = data.password;
+          body.confirm = data.confirm;
+        }
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const r = await call('/api/register', 'POST', body);
+          if (r && r.pow && !r.ok) {
+            const sol = await solvePow(r.pow);
+            if (!sol) return { ok: false, errors: ['Не удалось подтвердить, что вы не робот. Попробуйте ещё раз.'] };
+            body.pow_seed = sol.pow_seed;
+            body.pow_nonce = sol.pow_nonce;
+            continue;
+          }
+          if (r.ok) { localStorage.setItem(K.token, r.token); writeJSON(K.me, r.user); }
+          return r;
+        }
+        return { ok: false, errors: ['Не удалось зарегистрироваться. Попробуйте ещё раз.'] };
       }
 
       const user = {
@@ -114,7 +192,9 @@
 
     async login(email, password) {
       if (mode === 'server') {
-        const r = await call('/api/login', 'POST', { email, password });
+        const sealed = await seal(password);
+        const body = sealed ? { email, password_enc: sealed } : { email, password };
+        const r = await call('/api/login', 'POST', body);
         if (r.ok) { localStorage.setItem(K.token, r.token); writeJSON(K.me, r.user); }
         return r;
       }
