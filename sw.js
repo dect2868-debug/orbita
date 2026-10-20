@@ -38,6 +38,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;                 // API-запросы не трогаем
   if (req.url.includes('/api/')) return;
+  if (req.url.endsWith('.apk')) return;              // установочный файл — всегда напрямую из сети
   e.respondWith(
     fetch(req)
       .then(res => {
