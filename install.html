@@ -34,9 +34,8 @@
 
   <div class="panel" style="margin-bottom:22px">
     <h2>Скачать APK-файл</h2>
-    <p>Прямая установка приложения для Android: файл <b>ORBITA.apk</b> (версия 1.0, около 17 КБ).
-    Подходит, если установка через браузер не поддерживается или удобнее ставить из файла.
-    На iPhone этот файл не нужен — используйте инструкцию для Safari ниже.</p>
+    <p>Основной способ поставить приложение на Android: файл <b>ORBITA.apk</b> (версия 1.0,
+    около 17 КБ). На iPhone этот файл не нужен — используйте инструкцию для Safari ниже.</p>
     <a class="btn" href="ORBITA.apk" download="ORBITA.apk">Скачать ORBITA.apk</a>
     <ol class="inst-steps" style="margin-top:18px">
       <li>Откройте скачанный файл из загрузок браузера или раздела «Файлы»</li>
@@ -58,11 +57,11 @@
       <h2>Android</h2>
       <ol class="inst-steps">
         <li>Открой сайт в браузере <b>Chrome</b> на телефоне</li>
-        <li>Нажми кнопку <b>«Установить»</b> ниже или меню браузера <b>⋮ → Установить приложение</b></li>
+        <li>Нажми меню браузера <b>⋮ → Установить приложение</b></li>
         <li>Подтверди — на рабочем столе появится иконка <b>◍ ORBITA</b></li>
       </ol>
-      <button type="button" class="btn inst-btn" id="installBtn">Установить приложение</button>
-      <p class="inst-note" id="instNote"></p>
+      <p class="inst-note">Так сайт ставится как приложение (PWA): иконка на рабочем
+      столе и работа офлайн. Файл APK выше — альтернатива для любого Android-телефона.</p>
     </div>
 
     <div class="panel inst-card">
@@ -110,52 +109,5 @@
 <script src="auth.js"></script>
 <script src="layout.js"></script>
 <script src="script.js"></script>
-<script>
-(function () {
-  const btn = document.getElementById('installBtn');
-  const note = document.getElementById('instNote');
-  let deferred = null;
-
-  // уже открыт как приложение?
-  const standalone = window.matchMedia('(display-mode: standalone)').matches ||
-                     window.navigator.standalone === true;
-  if (standalone) {
-    btn.disabled = true;
-    btn.textContent = 'Приложение уже установлено';
-    note.textContent = 'Запускайте его с иконки на рабочем столе.';
-    return;
-  }
-
-  // Chrome запрашивает разрешение на установку через это событие
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferred = e;
-  });
-
-  btn.addEventListener('click', async () => {
-    if (deferred) {
-      deferred.prompt();
-      const choice = await deferred.userChoice;
-      deferred = null;
-      if (choice.outcome === 'accepted') {
-        btn.textContent = 'Устанавливается…';
-        note.textContent = 'Готово! Иконка появится на рабочем столе.';
-      }
-    } else {
-      note.innerHTML = 'Установка от этой кнопки поддерживается в Chrome (Android и компьютер). ' +
-        'На iPhone следуйте инструкции справа, в других браузерах — ' +
-        'меню браузера → <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.';
-    }
-  });
-
-  // если событие так и не пришло (не Chrome) — заранее подскажем
-  setTimeout(() => {
-    if (!deferred && !note.textContent) {
-      note.textContent = 'Если кнопка не сработала: откройте меню браузера (⋮) и выберите ' +
-        '«Установить приложение» или «Добавить на главный экран».';
-    }
-  }, 1200);
-})();
-</script>
 </body>
 </html>
