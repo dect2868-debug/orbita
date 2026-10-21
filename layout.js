@@ -88,7 +88,6 @@ function renderFooter() {
       <a href="tickets.html">Билеты</a>
       <a href="news.html">Новости</a>
       <a href="install.html">📱 Установка на телефон</a>
-      <a href="ORBITA.apk" download>Скачать APK</a>
       <a href="support.html">Поддержка</a>
       <a href="register.html">Регистрация</a>
     </div>
