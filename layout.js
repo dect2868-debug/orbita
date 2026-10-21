@@ -130,5 +130,5 @@ if (window.OrbAuth) {
 
 // ============ Адрес API сервера (его обновляет start_orbita.ps1) ============
 // Пустая строка = сайт работает автономно. На GitHub Pages — адрес туннеля.
-window.ORBITA_API = location.hostname.endsWith('.github.io') ? 'https://cruel-rice-search.loca.lt' : '';
+window.ORBITA_API = location.hostname.endsWith('.github.io') ? 'https://ready-feet-share.loca.lt' : '';
 window.dispatchEvent(new Event('orbita-config'));
